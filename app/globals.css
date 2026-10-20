@@ -1,26 +1,84 @@
+/* app/globals/css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-dana), ui-sans-serif, system-ui, sans-serif;
+
+  /* رنگ‌های تیره (پیش‌فرض) */
+  --color-bg-primary: #0f0d0a;
+  --color-bg-secondary: #161210;
+  --color-bg-elevated: #1a1513;
+
+  --color-fg-primary: #fffbeb;
+  --color-fg-secondary: rgba(255, 251, 235, 0.6);
+  --color-fg-muted: rgba(255, 251, 235, 0.4);
+
+  --color-border-subtle: rgba(245, 158, 11, 0.15);
+  --color-border-base: rgba(245, 158, 11, 0.25);
+  --color-border-strong: rgba(245, 158, 11, 0.5);
+
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #ea580c;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* تم روشن */
+html.light {
+  --color-bg-primary: #fdfcfb;
+  --color-bg-secondary: #ffffff;
+  --color-bg-elevated: #f5f0ea;
+
+  --color-fg-primary: #1a1513;
+  --color-fg-secondary: rgba(26, 21, 19, 0.65);
+  --color-fg-muted: rgba(26, 21, 19, 0.45);
+
+  --color-border-subtle: rgba(234, 88, 12, 0.15);
+  --color-border-base: rgba(234, 88, 12, 0.25);
+  --color-border-strong: rgba(234, 88, 12, 0.5);
+
+  --color-brand-400: #f59e0b;
+  --color-brand-500: #d97706;
+  --color-brand-600: #b45309;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dana), ui-sans-serif, system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(200%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* اسکرول‌بار سفارشی */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: 4px;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(217, 119, 6, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.4) !important;
 }
