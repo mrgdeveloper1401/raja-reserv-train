@@ -3,16 +3,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  turbopack: {
+    root: process.cwd(),
+  },
   /* config options here */
   // cacheComponents: true,
   // partialPrefetching: true,
   // turbopack: {
-    // rules: {
-      // "*.css": {
-        // loaders: ["@tailwindcss/turbopack"],
-        // as: "*.css",
-      // },
-    // },
+  // rules: {
+  // "*.css": {
+  // loaders: ["@tailwindcss/turbopack"],
+  // as: "*.css",
+  // },
+  // },
   // },
 };
 
