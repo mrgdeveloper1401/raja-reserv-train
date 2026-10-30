@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
   if (!accessToken && refreshToken) {
     try {
       // درخواست به بک‌اند برای گرفتن توکن جدید (از fetch استفاده می‌کنیم چون در Edge هستیم)
-      const res = await fetch(`${baseUrl}/auth/token/refresh`, {
+      const res = await fetch(`${baseUrl}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh: refreshToken }),
@@ -26,7 +26,9 @@ export async function proxy(request: NextRequest) {
         const newAccess =
           data.access ?? data.access_token ?? data.token?.access_token;
         const expiresIn =
-          data.access_token_life_time ?? data.access_token_expires_in ?? 3600;
+          data.access_token_life_time ??
+          data.access_token_expire_datetime ??
+          3600;
 
         if (!newAccess) {
           throw new Error("Invalid refresh response");
