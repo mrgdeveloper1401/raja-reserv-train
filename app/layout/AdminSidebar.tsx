@@ -27,6 +27,8 @@ const items = [
   // { label: "لاگ‌ها", href: "/admin/logs", icon: ScrollText },
   // { label: "تنظیمات", href: "/admin/settings", icon: Settings },
   { label: "ثبت سفارش", href: "/admin/create_order", icon: ListOrdered },
+  { label: "حساب رجا", href: "/admin/raja_account", icon: ListOrdered },
+
 ];
 
 export default function AdminSidebar() {

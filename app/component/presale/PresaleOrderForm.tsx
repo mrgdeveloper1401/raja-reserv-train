@@ -49,7 +49,7 @@ export function PresaleOrderForm() {
       p.map((x, idx) => (idx === i ? { ...x, [key]: v } : x)),
     );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!from || !to) return notify.error("مبدا و مقصد الزامی است");
     if (selectedPassengers.length === 0)

@@ -33,7 +33,7 @@ export default function NotFound() {
             صفحه‌ی اصلی
           </Link>
           <Link
-            href="/dashboard"
+            href="/admin"
             className="flex items-center gap-2 rounded-xl border border-amber-500/25 px-6 py-3 text-sm text-amber-100/70 transition hover:bg-amber-500/10 hover:text-amber-100"
           >
             داشبورد من

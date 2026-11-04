@@ -188,7 +188,7 @@ function PassengerForm({
     return Object.keys(e).length === 0;
   };
 
-  const submit = (ev: React.FormEvent) => {
+  const submit = (ev: React.SubmitEvent) => {
     ev.preventDefault();
     if (!validate()) return;
     onSubmit({ firstName, lastName, nationalId, gender, birthDate, phone });

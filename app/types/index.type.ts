@@ -193,3 +193,60 @@ export interface OrdersQuery {
   date?: string;
   page?: number;
 }
+
+// مشتریان
+export interface PassengerListItem {
+  id: number;
+  full_name: string;
+  phone: string;
+  orders_count: number;
+  last_order_date: string | null;
+}
+
+export interface PaginatedPassengers {
+  items: PassengerListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface CreatePassengerPayload {
+  first_name: string;
+  last_name: string;
+  national_id: string;
+  gender: string;
+  birth_date?: string | null;
+  phone: string;
+}
+
+export interface PassengerOrder {
+  id: number;
+  origin: string;
+  destination: string;
+  travel_date: string;
+  passenger_type: string;
+}
+
+export interface PassengerDetail {
+  id: number;
+  first_name: string;
+  last_name: string;
+  national_id: string;
+  gender: "male" | "female";
+  birth_date: string | null;
+  phone: string;
+  orders: PassengerOrder[];
+}
+
+export interface RajaAccountItem {
+  id: number;
+  username: string;
+  is_active: boolean;
+}
+
+export interface PaginatedRajaAccounts {
+  items: RajaAccountItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}

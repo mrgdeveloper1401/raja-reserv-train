@@ -25,7 +25,7 @@ export default function NewOrderPage() {
     { from: "", to: "" },
   ]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     // اعتبارسنجی ساده
     if (!from || !to || !date) {
