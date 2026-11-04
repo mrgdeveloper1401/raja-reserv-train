@@ -26,6 +26,7 @@ const items = [
   { label: "گزارشات", href: "/admin/reports", icon: BarChart3 },
   { label: "لاگ‌ها", href: "/admin/logs", icon: ScrollText },
   { label: "تنظیمات", href: "/admin/settings", icon: Settings },
+  { label: "ثبت سفارش", href: "/admin/create_order", icon: ListOrdered },
 ];
 
 export default function AdminSidebar() {
