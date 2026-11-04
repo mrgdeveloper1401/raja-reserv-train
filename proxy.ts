@@ -18,7 +18,7 @@ export async function proxy(request: NextRequest) {
       const res = await fetch(`${baseUrl}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: refreshToken }),
+        body: JSON.stringify({ refresh_token: refreshToken }),
       });
 
       if (res.ok) {

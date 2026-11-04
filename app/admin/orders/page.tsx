@@ -1,75 +1,46 @@
 // app/admin/orders/page.tsx
-"use client";
-import { useMemo, useState } from "react";
-import { OrdersTabs, type TabKey } from "../../component/orders/OrdersTabs";
+import { cookies } from "next/headers";
+import { OrdersTabs } from "../../component/orders/OrdersTabs";
 import { OrdersFilterBar } from "../../component/orders/OrdersFilterBar";
 import { OrdersDataTable } from "../../component/orders/OrdersDataTable";
-import { mockOrders } from "../../lib/mock-data";
+import { getOrders } from "../../lib/api";
 
-const PAGE_SIZE = 8;
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    tab?: string;
+    search?: string;
+    date?: string;
+    page?: string;
+  }>;
+}) {
+  const params = await searchParams;
 
-export default function AdminOrdersPage() {
-  const [tab, setTab] = useState<TabKey>("all");
-  const [search, setSearch] = useState("");
-  const [date, setDate] = useState("");
-  const [page, setPage] = useState(1);
+  // گرفتن توکن از کوکی
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
 
-  // شمارش برای هر تب
-  const counts = useMemo(
-    () => ({
-      all: mockOrders.length,
-      active: mockOrders.filter((o) =>
-        ["pending", "processing", "booking", "payment_ready"].includes(o.status)
-      ).length,
-      success: mockOrders.filter((o) => o.status === "success").length,
-      failed: mockOrders.filter((o) => o.status === "failed").length,
-      cancelled: mockOrders.filter((o) => o.status === "cancelled").length,
-    }),
-    []
-  );
+  if (!token) {
+    return <div className="text-amber-100/60">لطفا وارد شوید.</div>;
+  }
 
-  // فیلتر
-  const filtered = useMemo(() => {
-    return mockOrders.filter((o) => {
-      // تب
-      if (tab === "active") {
-        if (!["pending", "processing", "booking", "payment_ready"].includes(o.status))
-          return false;
-      } else if (tab === "success" && o.status !== "success") return false;
-      else if (tab === "failed" && o.status !== "failed") return false;
-      else if (tab === "cancelled" && o.status !== "cancelled") return false;
+  // تنظیم پارامترها با مقادیر پیش‌فرض
+  const currentTab = params.tab || "all";
+  const currentSearch = params.search || "";
+  const currentDate = params.date || "";
+  const currentPage = parseInt(params.page || "1", 10);
 
-      // جستجو
-      if (search) {
-        const q = search.toLowerCase();
-        const hay = `${o.code} ${o.from} ${o.to}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-
-      // تاریخ
-      if (date && o.date !== date) return false;
-
-      return true;
-    });
-  }, [tab, search, date]);
-
-  // بازگرداندن به صفحه‌ی ۱ هنگام تغییر فیلترها
-  const handleTab = (t: TabKey) => {
-    setTab(t);
-    setPage(1);
-  };
-  const handleSearch = (v: string) => {
-    setSearch(v);
-    setPage(1);
-  };
-  const handleDate = (v: string) => {
-    setDate(v);
-    setPage(1);
-  };
+  // واکشی دیتا از سرور
+  const data = await getOrders(token, {
+    tab: currentTab,
+    search: currentSearch,
+    date: currentDate,
+    page: currentPage,
+  });
 
   return (
     <div className="space-y-5">
-      {/* سرصفحه */}
       <div>
         <h1 className="text-2xl font-black text-amber-50">سفارشات</h1>
         <p className="mt-1 text-sm text-amber-100/40">
@@ -77,23 +48,22 @@ export default function AdminOrdersPage() {
         </p>
       </div>
 
-      {/* تب‌ها */}
-      <OrdersTabs current={tab} onChange={handleTab} counts={counts} />
+      {/* کامپوننت‌های زیر باید "use client" باشند تا با URL بازی کنند */}
+      <OrdersTabs currentTab={currentTab} counts={{ all: data.total }} />
 
-      {/* فیلترها */}
       <OrdersFilterBar
-        search={search}
-        onSearch={handleSearch}
-        date={date}
-        onDate={handleDate}
+        currentSearch={currentSearch}
+        currentDate={currentDate}
       />
 
-      {/* جدول */}
       <OrdersDataTable
-        orders={filtered}
-        page={page}
-        pageSize={PAGE_SIZE}
-        onPageChange={setPage}
+        reservations={data.items}
+        total={data.total}
+        page={currentPage}
+        pageSize={data.page_size}
+        currentSearch={currentSearch}
+        currentDate={currentDate}
+        currentTab={currentTab}
       />
     </div>
   );

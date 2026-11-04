@@ -1,28 +1,29 @@
 // app/admin/page.tsx
-import {
-  Activity,
-  CheckCircle2,
-  XCircle,
-  Database,
-  Server,
-  Timer,
-  Rocket,
-} from "lucide-react";
-import Link from "next/link";
+import { cookies } from "next/headers";
+import { Activity, CheckCircle2, XCircle } from "lucide-react";
 import { StatCard } from "../component/dashboard/StatCard";
 import { OrdersTable } from "../component/dashboard/OrdersTable";
-import { WorkersPanel } from "../component/dashboard/WorkersPanel";
-import { ServersGrid } from "../component/dashboard/ServersGrid";
-import { Button } from "../component/ui/Button";
-import {
-  mockStats,
-  mockOrders,
-  mockWorkers,
-  mockServers,
-} from "../lib/mock-data";
+import { getDashboardStatus, getFiveLastReservations } from "../lib/api";
 
-export default function AdminDashboardPage() {
-  const presaleOrders = mockOrders.filter((o) => o.isPresale);
+export default async function AdminDashboardPage() {
+  // خواندن توکن از کوکی (حتما باید توکن در کوکی ذخیره شده باشد)
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  // اگر توکن نبود، می‌توانید کاربر را ریدایرکت کنید یا خطا بدهید
+  if (!token) {
+    return (
+      <div className="flex h-96 items-center justify-center text-amber-100/60">
+        لطفا ابتدا وارد حساب کاربری خود شوید.
+      </div>
+    );
+  }
+
+  // دریافت دیتاها به صورت موازی
+  const [stats, reservations] = await Promise.all([
+    getDashboardStatus(token),
+    getFiveLastReservations(token),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -34,66 +35,37 @@ export default function AdminDashboardPage() {
             نمای زنده‌ی وضعیت سیستم و سفارشات
           </p>
         </div>
-        <Link href="/admin/presale">
-          <Button>
-            <Rocket className="h-4 w-4" />
-            حالت پیش‌فروش
-          </Button>
-        </Link>
       </div>
 
       {/* کارت‌های آمار */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-3">
         <StatCard
           label="سفارشات فعال"
-          value={mockStats.activeOrders}
+          value={stats.active_orders_count}
           icon={Activity}
           tone="amber"
         />
         <StatCard
-          label="ظرفیت پیدا شده"
-          value={mockStats.capacitiesFound}
-          icon={Database}
-          tone="cyan"
-        />
-        <StatCard
           label="رزرو موفق"
-          value={mockStats.successBookings}
+          value={stats.success_count}
           icon={CheckCircle2}
           tone="emerald"
         />
         <StatCard
           label="رزرو ناموفق"
-          value={mockStats.failedBookings}
+          value={stats.failed_count}
           icon={XCircle}
           tone="rose"
         />
-        <StatCard
-          label="سلامت سرورها"
-          value={`${mockStats.serverHealth}%`}
-          icon={Server}
-          tone="blue"
-        />
-        <StatCard
-          label="میانگین پاسخ"
-          value={`${mockStats.avgResponseTime}s`}
-          icon={Timer}
-          tone="violet"
-        />
       </div>
 
-      {/* جدول سفارشات + Workerها */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {/* جدول سفارشات */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-1">
         <div className="lg:col-span-2">
-          <OrdersTable orders={presaleOrders} />
-        </div>
-        <div>
-          <WorkersPanel workers={mockWorkers} />
+          {/* دیتا را به کامپوننت پاس می‌دهیم */}
+          <OrdersTable reservations={reservations} />
         </div>
       </div>
-
-      {/* سرورها */}
-      <ServersGrid servers={mockServers} />
     </div>
   );
 }

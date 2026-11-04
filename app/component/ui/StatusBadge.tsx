@@ -1,17 +1,31 @@
 // app/component/ui/StatusBadge.tsx
-// مخصوص سفارش
-import { Badge } from "./Badge";
 import {
-  ORDER_STATUS_LABEL,
   ORDER_STATUS_COLOR,
+  ORDER_STATUS_LABEL,
+  RESERVATION_STATUS_COLOR,
+  RESERVATION_STATUS_LABEL,
   type OrderStatus,
+  type ReservationStatus,
 } from "../../types/index.type";
 
-export function StatusBadge({ status }: { status: OrderStatus }) {
+type Props = {
+  status: OrderStatus | ReservationStatus;
+};
+
+export function StatusBadge({ status }: Props) {
+  const isReservation = status in RESERVATION_STATUS_LABEL;
+  const label = isReservation
+    ? RESERVATION_STATUS_LABEL[status as ReservationStatus]
+    : ORDER_STATUS_LABEL[status as OrderStatus];
+  const color = isReservation
+    ? RESERVATION_STATUS_COLOR[status as ReservationStatus]
+    : ORDER_STATUS_COLOR[status as OrderStatus];
+
   return (
-    <Badge className={ORDER_STATUS_COLOR[status]}>
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {ORDER_STATUS_LABEL[status]}
-    </Badge>
+    <span
+      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs ${color}`}
+    >
+      {label}
+    </span>
   );
 }

@@ -18,14 +18,14 @@ import {
 
 const items = [
   { label: "داشبورد", href: "/admin", icon: LayoutDashboard },
-  { label: "پیش‌فروش", href: "/admin/presale", icon: Rocket },
+  // { label: "پیش‌فروش", href: "/admin/presale", icon: Rocket },
   { label: "سفارشات", href: "/admin/orders", icon: ListOrdered },
-  { label: "Workerها", href: "/admin/workers", icon: Cpu },
+  // { label: "Workerها", href: "/admin/workers", icon: Cpu },
   { label: "مشتریان", href: "/admin/customers", icon: Users },
-  { label: "سرورها", href: "/admin/servers", icon: Server },
-  { label: "گزارشات", href: "/admin/reports", icon: BarChart3 },
-  { label: "لاگ‌ها", href: "/admin/logs", icon: ScrollText },
-  { label: "تنظیمات", href: "/admin/settings", icon: Settings },
+  // { label: "سرورها", href: "/admin/servers", icon: Server },
+  // { label: "گزارشات", href: "/admin/reports", icon: BarChart3 },
+  // { label: "لاگ‌ها", href: "/admin/logs", icon: ScrollText },
+  // { label: "تنظیمات", href: "/admin/settings", icon: Settings },
   { label: "ثبت سفارش", href: "/admin/create_order", icon: ListOrdered },
 ];
 

@@ -1,3 +1,4 @@
+// app/utils/config.ts
 import axios from "axios";
 import { NextResponse } from "next/server";
 
@@ -9,4 +10,8 @@ export const baseUrl =
 
 export const api = axios.create({
   url: baseUrl,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });

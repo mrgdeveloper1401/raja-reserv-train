@@ -19,9 +19,9 @@ export interface Passenger {
   id: string;
   firstName: string;
   lastName: string;
-  nationalId: string;       // کد ملی تایید شده
+  nationalId: string; // کد ملی تایید شده
   gender: Gender;
-  birthDate: string;        // YYYY-MM-DD (میلادی برای ذخیره)
+  birthDate: string; // YYYY-MM-DD (میلادی برای ذخیره)
   phone: string;
   userId: string;
 }
@@ -39,13 +39,13 @@ export const TRAIN_TYPE_LABEL: Record<TrainType, string> = {
 
 // ---------- سفارش ----------
 export type OrderStatus =
-  | "pending"        // در انتظار شروع فروش
-  | "processing"     // در حال پردازش
-  | "booking"        // ورود به رزرو
-  | "success"        // رزرو موفق
-  | "payment_ready"  // موفق تا مرحله پرداخت
-  | "failed"         // ناموفق
-  | "cancelled";     // لغو شده
+  | "pending" // در انتظار شروع فروش
+  | "processing" // در حال پردازش
+  | "booking" // ورود به رزرو
+  | "success" // رزرو موفق
+  | "payment_ready" // موفق تا مرحله پرداخت
+  | "failed" // ناموفق
+  | "cancelled"; // لغو شده
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "در انتظار شروع فروش",
@@ -69,26 +69,69 @@ export const ORDER_STATUS_COLOR: Record<OrderStatus, string> = {
 
 export interface TimeRange {
   from: number; // ساعت شروع مثلا 18
-  to: number;   // ساعت پایان مثلا 21
+  to: number; // ساعت پایان مثلا 21
+}
+
+export type ReservationStatus =
+  | "pending"
+  | "monitoring"
+  | "booking"
+  | "redirect_gateway"
+  | "success"
+  | "failed";
+
+export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
+  pending: "انتظار",
+  monitoring: "در حال رصد",
+  booking: "در حال رزرو",
+  redirect_gateway: "هدایت به درگاه پرداخت",
+  success: "موفق",
+  failed: "ناموفق",
+};
+
+export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
+  pending: "text-amber-300 bg-amber-500/10 border-amber-500/30",
+  monitoring: "text-blue-300 bg-blue-500/10 border-blue-500/30",
+  booking: "text-violet-300 bg-violet-500/10 border-violet-500/30",
+  redirect_gateway: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30",
+  success: "text-emerald-300 bg-emerald-500/10 border-emerald-500/30",
+  failed: "text-rose-300 bg-rose-500/10 border-rose-500/30",
+};
+
+export interface Reservation {
+  id: number;
+  passenger_first_name: string;
+  passenger_last_name: string;
+  passenger_phone: string;
+  origin: string;
+  destination: string;
+  travel_date: string; // YYYY-MM-DD
+  status: ReservationStatus;
+}
+
+export interface DashboardStatus {
+  failed_count: number;
+  success_count: number;
+  active_orders_count: number;
 }
 
 export interface Order {
   id: string;
-  code: string;              // شماره نمایشی مثل #2154
+  code: string; // شماره نمایشی مثل #2154
   userId: string;
-  from: string;              // مبدا
-  to: string;                // مقصد
-  date: string;              // تاریخ حرکت (YYYY-MM-DD)
-  passengerIds: string[];    // شناسه مسافران
-  trainNumbers: string[];    // شماره قطارهای مجاز
-  trainTypes: TrainType[];   // انواع قطار
-  priceLimit: number;        // سقف قیمت (تومان)
-  timeRanges: TimeRange[];   // بازه‌های ساعت حرکت
+  from: string; // مبدا
+  to: string; // مقصد
+  date: string; // تاریخ حرکت (YYYY-MM-DD)
+  passengerIds: string[]; // شناسه مسافران
+  trainNumbers: string[]; // شماره قطارهای مجاز
+  trainTypes: TrainType[]; // انواع قطار
+  priceLimit: number; // سقف قیمت (تومان)
+  timeRanges: TimeRange[]; // بازه‌های ساعت حرکت
   status: OrderStatus;
-  isPresale: boolean;        // آیا پیش‌فروش است؟
+  isPresale: boolean; // آیا پیش‌فروش است؟
   createdAt: string;
   updatedAt: string;
-  errorMessage?: string;     // اگر failed بود
+  errorMessage?: string; // اگر failed بود
 }
 
 // ---------- Worker ----------
@@ -96,9 +139,9 @@ export type WorkerStatus = "idle" | "running" | "error";
 
 export interface Worker {
   id: string;
-  name: string;              // Worker #1
+  name: string; // Worker #1
   orderId: string;
-  route: string;             // "تهران ← مشهد"
+  route: string; // "تهران ← مشهد"
   status: WorkerStatus;
   serverId: string;
   startedAt: string;
@@ -113,8 +156,8 @@ export interface Server {
   status: ServerStatus;
   activeOrders: number;
   maxOrders: number;
-  cpu: number;               // %
-  latency: number;           // ms
+  cpu: number; // %
+  latency: number; // ms
 }
 
 // ---------- داشبورد ----------
@@ -123,8 +166,8 @@ export interface DashboardStats {
   capacitiesFound: number;
   successBookings: number;
   failedBookings: number;
-  serverHealth: number;      // %
-  avgResponseTime: number;   // seconds
+  serverHealth: number; // %
+  avgResponseTime: number; // seconds
 }
 
 // ---------- گزارش ----------
@@ -133,5 +176,20 @@ export interface DailyReport {
   totalOrders: number;
   successCount: number;
   failedCount: number;
-  successRate: number;       // %
+  successRate: number; // %
+}
+
+// سفارشات
+export interface PaginatedOrders {
+  items: Reservation[]; // همون تایپ Reservation که قبلا ساختیم
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface OrdersQuery {
+  tab?: string;
+  search?: string;
+  date?: string;
+  page?: number;
 }
