@@ -250,3 +250,9 @@ export interface PaginatedRajaAccounts {
   page: number;
   page_size: number;
 }
+
+// ---------- اکانت‌های رجا ----------
+export interface RajaAccountOption {
+  id: number;
+  username: string;
+}

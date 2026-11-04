@@ -8,6 +8,7 @@ import type {
   PaginatedPassengers,
   PaginatedRajaAccounts,
   PassengerDetail,
+  RajaAccountOption,
   Reservation,
 } from "../types/index.type";
 
@@ -200,4 +201,30 @@ export const deleteRajaAccount = async (token: string, id: number) => {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("خطا در حذف اکانت");
+};
+
+export const getRajaAccountOptions = async (token: string) => {
+  const res = await fetch(`${baseUrl}/auth/raja-accounts/options`, {
+    headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("خطا در دریافت اکانت‌ها");
+  return res.json() as Promise<RajaAccountOption[]>;
+};
+
+export const createOrder = async (token: string, data: any) => {
+  const res = await fetch(`${baseUrl}/admin/orders`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "خطا در ثبت سفارش");
+  }
+  return res.json();
 };
