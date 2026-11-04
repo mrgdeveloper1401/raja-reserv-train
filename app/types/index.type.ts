@@ -256,3 +256,13 @@ export interface RajaAccountOption {
   id: number;
   username: string;
 }
+
+export interface DashboardChartStatus {
+  pending_count: number;
+  monitoring_count: number;
+  booking_count: number;
+  redirect_gateway_count: number;
+  success_count: number;
+  failed_count: number;
+  active_orders_count: number;
+}

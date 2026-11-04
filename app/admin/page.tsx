@@ -3,14 +3,17 @@ import { cookies } from "next/headers";
 import { Activity, CheckCircle2, XCircle } from "lucide-react";
 import { StatCard } from "../component/dashboard/StatCard";
 import { OrdersTable } from "../component/dashboard/OrdersTable";
-import { getDashboardStatus, getFiveLastReservations } from "../lib/api";
+import {
+  getDashboardStatus,
+  getFiveLastReservations,
+  getDashboardChartStatus,
+} from "../lib/api";
+import { ReservationsChart } from "../dashboard/ReservationsChart";
 
 export default async function AdminDashboardPage() {
-  // خواندن توکن از کوکی (حتما باید توکن در کوکی ذخیره شده باشد)
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
-  // اگر توکن نبود، می‌توانید کاربر را ریدایرکت کنید یا خطا بدهید
   if (!token) {
     return (
       <div className="flex h-96 items-center justify-center text-amber-100/60">
@@ -19,10 +22,11 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  // دریافت دیتاها به صورت موازی
-  const [stats, reservations] = await Promise.all([
+  // واکشی همزمان هر سه دیتا
+  const [stats, reservations, chartStats] = await Promise.all([
     getDashboardStatus(token),
     getFiveLastReservations(token),
+    getDashboardChartStatus(token),
   ]);
 
   return (
@@ -37,33 +41,36 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* کارت‌های آمار */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-3">
-        <StatCard
-          label="سفارشات فعال"
-          value={stats.active_orders_count}
-          icon={Activity}
-          tone="amber"
-        />
-        <StatCard
-          label="رزرو موفق"
-          value={stats.success_count}
-          icon={CheckCircle2}
-          tone="emerald"
-        />
-        <StatCard
-          label="رزرو ناموفق"
-          value={stats.failed_count}
-          icon={XCircle}
-          tone="rose"
-        />
-      </div>
-
-      {/* جدول سفارشات */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-1">
-        <div className="lg:col-span-2">
-          {/* دیتا را به کامپوننت پاس می‌دهیم */}
+      {/* بخش بالایی: کارت‌ها + نمودار */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ستون سمت راست (کارت‌های آمار + جدول) */}
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              label="سفارشات فعال"
+              value={stats.active_orders_count}
+              icon={Activity}
+              tone="amber"
+            />
+            <StatCard
+              label="رزرو موفق"
+              value={stats.success_count}
+              icon={CheckCircle2}
+              tone="emerald"
+            />
+            <StatCard
+              label="رزرو ناموفق"
+              value={stats.failed_count}
+              icon={XCircle}
+              tone="rose"
+            />
+          </div>
           <OrdersTable reservations={reservations} />
+        </div>
+
+        {/* ستون سمت چپ (نمودار) */}
+        <div className="lg:col-span-1">
+          <ReservationsChart stats={chartStats} />
         </div>
       </div>
     </div>

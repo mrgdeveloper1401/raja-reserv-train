@@ -2,6 +2,7 @@
 import { baseUrl } from "../utils/config";
 import type {
   CreatePassengerPayload,
+  DashboardChartStatus,
   DashboardStatus,
   OrdersQuery,
   PaginatedOrders,
@@ -227,4 +228,16 @@ export const createOrder = async (token: string, data: any) => {
     throw new Error(err.detail || "خطا در ثبت سفارش");
   }
   return res.json();
+};
+
+export const getDashboardChartStatus = async (token: string) => {
+  const res = await fetch(`${baseUrl}/admin/status/chart`, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch chart data");
+  return res.json() as Promise<DashboardChartStatus>;
 };
