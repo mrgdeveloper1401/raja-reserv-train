@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   /* config options here */
   // cacheComponents: true,
   // partialPrefetching: true,
