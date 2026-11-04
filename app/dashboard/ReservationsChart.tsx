@@ -88,3 +88,4 @@ export function ReservationsChart({ stats }: Props) {
     </Card>
   );
 }
+
