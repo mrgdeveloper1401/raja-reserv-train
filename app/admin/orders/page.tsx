@@ -64,6 +64,7 @@ export default async function AdminOrdersPage({
         currentSearch={currentSearch}
         currentDate={currentDate}
         currentTab={currentTab}
+        token={token}
       />
     </div>
   );
