@@ -8,6 +8,8 @@ export const response = NextResponse;
 export const baseUrl =
   process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:8000/api/v1";
 
+export const prodNextUrl = process.env.NEXT_PUBLIC_URL
+
 export const api = axios.create({
   url: baseUrl,
   headers: {

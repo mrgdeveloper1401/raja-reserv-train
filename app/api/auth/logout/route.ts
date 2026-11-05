@@ -1,9 +1,9 @@
 // app/api/auth/logout/route.ts
-import { request } from "http";
+import { prodNextUrl } from "@/app/utils/config";
 import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   const cookieStore = await cookies();
 
   // پاک کردن توکن‌ها
@@ -11,5 +11,5 @@ export async function POST(request: NextRequest) {
   cookieStore.delete("refresh_token");
 
   // انتقال کاربر به صفحه لاگین
-  return NextResponse.redirect(new URL("/login", request.url));
+  return NextResponse.redirect(new URL("/login", prodNextUrl));
 }
