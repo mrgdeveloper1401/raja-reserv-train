@@ -1,34 +1,21 @@
 // app/layout/AdminSidebar.tsx
-// ساید بار پنل ادمین
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Rocket,
   ListOrdered,
-  Cpu,
   Users,
-  Server,
-  BarChart3,
-  ScrollText,
-  Settings,
+  LogOut,
   Sparkles,
 } from "lucide-react";
 
 const items = [
   { label: "داشبورد", href: "/admin", icon: LayoutDashboard },
-  // { label: "پیش‌فروش", href: "/admin/presale", icon: Rocket },
   { label: "سفارشات", href: "/admin/orders", icon: ListOrdered },
-  // { label: "Workerها", href: "/admin/workers", icon: Cpu },
   { label: "مشتریان", href: "/admin/customers", icon: Users },
-  // { label: "سرورها", href: "/admin/servers", icon: Server },
-  // { label: "گزارشات", href: "/admin/reports", icon: BarChart3 },
-  // { label: "لاگ‌ها", href: "/admin/logs", icon: ScrollText },
-  // { label: "تنظیمات", href: "/admin/settings", icon: Settings },
   { label: "ثبت سفارش", href: "/admin/create_order", icon: ListOrdered },
   { label: "حساب رجا", href: "/admin/raja_account", icon: ListOrdered },
-
 ];
 
 export default function AdminSidebar() {
@@ -72,6 +59,19 @@ export default function AdminSidebar() {
           );
         })}
       </nav>
+
+      {/* دکمه خروج (با فرم) */}
+      <div className="border-t border-amber-500/10 p-3">
+        <form action="/api/auth/logout" method="POST">
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-400 hover:bg-rose-500/10 transition"
+          >
+            <LogOut className="h-4.5 w-4.5" />
+            خروج از حساب
+          </button>
+        </form>
+      </div>
 
       <div className="border-t border-amber-500/10 p-4 text-[10px] text-amber-200/30">
         نسخه ۱.۰.۰
