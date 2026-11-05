@@ -12,9 +12,6 @@ import {
   Train,
   Loader2,
 } from "lucide-react";
-import DatePicker, { DateObject } from "react-multi-date-picker";
-import persian from "react-date-object/calendars/persian";
-import persian_fa from "react-date-object/locales/persian_fa";
 import { Card } from "../../component/ui/Card";
 import { Button } from "../../component/ui/Button";
 import { createOrder } from "../../lib/api";
@@ -37,35 +34,15 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
     national_id: "",
     gender: "male",
     phone: "",
-    birth_date: "", // این مقدار همیشه به صورت میلادی (YYYY-MM-DD) ذخیره می‌شود
+    birth_date: "",
     // سفر
     origin: "",
     destination: "",
-    travel_date: "", // این مقدار همیشه به صورت میلادی (YYYY-MM-DD) ذخیره می‌شود
+    travel_date: "",
     passenger_type: "normal",
     // اکانت رجا
     raja_account_id: rajaAccounts[0]?.id || "",
   });
-
-  // هندلرهای جداگانه برای DatePicker که مقدار میلادی را در state ذخیره می‌کنند
-  const handleBirthDateChange = (dateObject: DateObject | null) => {
-    if (dateObject) {
-      // تبدیل به میلادی و فرمت YYYY-MM-DD
-      const gregorianStr = dateObject.convert("gregorian").format("YYYY-MM-DD");
-      setFormData((prev) => ({ ...prev, birth_date: gregorianStr }));
-    } else {
-      setFormData((prev) => ({ ...prev, birth_date: "" }));
-    }
-  };
-
-  const handleTravelDateChange = (dateObject: DateObject | null) => {
-    if (dateObject) {
-      const gregorianStr = dateObject.convert("gregorian").format("YYYY-MM-DD");
-      setFormData((prev) => ({ ...prev, travel_date: gregorianStr }));
-    } else {
-      setFormData((prev) => ({ ...prev, travel_date: "" }));
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -91,40 +68,8 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
     }
 
     try {
-      // 🟢 اینجا تاریخ‌ها را به میلادی تبدیل می‌کنیم 🟢
-      let gregorianBirthDate = formData.birth_date;
-      let gregorianTravelDate = formData.travel_date;
-
-      // اگر تاریخ شامل '/' بود (یعنی هنوز شمسی است)
-      if (formData.birth_date.includes("/")) {
-        gregorianBirthDate = new DateObject({
-          date: formData.birth_date,
-          calendar: persian,
-        })
-          .convert("gregorian")
-          .format("YYYY-MM-DD");
-      }
-
-      if (formData.travel_date.includes("/")) {
-        gregorianTravelDate = new DateObject({
-          date: formData.travel_date,
-          calendar: persian,
-        })
-          .convert("gregorian")
-          .format("YYYY-MM-DD");
-      }
-
-      // ساخت آبجکت نهایی برای ارسال
-      const payload = {
-        ...formData,
-        birth_date: gregorianBirthDate,
-        travel_date: gregorianTravelDate,
-      };
-
-      console.log("Payload to send:", payload);
-
-      await createOrder(token, payload); // ارسال payload میلادی
-
+      console.log("Payload to send:", formData);
+      await createOrder(token, formData);
       router.push("/admin/orders");
       router.refresh();
     } catch (err: any) {
@@ -148,7 +93,6 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
           <User className="h-5 w-5 text-amber-400" /> اطلاعات مسافر
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* ... فیلدهای نام، نام خانوادگی، کد ملی، موبایل بدون تغییر ... */}
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               نام
@@ -201,19 +145,19 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
-          {/* فیلد تاریخ تولد با DatePicker */}
+          {/* فیلد تاریخ تولد (میلادی) */}
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               <Calendar className="h-3.5 w-3.5" /> تاریخ تولد
             </label>
-            <DatePicker
-              calendar={persian}
-              locale={persian_fa}
-              value={formData.birth_date ? formData.birth_date : ""}
-              onChange={handleBirthDateChange}
-              format="YYYY/MM/DD"
-              portal
-              inputClass="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+            <input
+              required
+              type="date"
+              name="birth_date"
+              dir="ltr"
+              value={formData.birth_date}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
         </div>
@@ -249,19 +193,19 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50"
             />
           </div>
-          {/* فیلد تاریخ سفر با DatePicker */}
+          {/* فیلد تاریخ سفر (میلادی) */}
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               <Calendar className="h-3.5 w-3.5" /> تاریخ سفر
             </label>
-            <DatePicker
-              calendar={persian}
-              locale={persian_fa}
-              value={formData.travel_date ? formData.travel_date : ""}
-              onChange={handleTravelDateChange}
-              format="YYYY/MM/DD"
-              portal
-              inputClass="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+            <input
+              required
+              type="date"
+              name="travel_date"
+              dir="ltr"
+              value={formData.travel_date}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
           <div>
@@ -282,7 +226,7 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
         </div>
       </Card>
 
-      {/* بخش ۳: اکانت رجا (بدون تغییر) */}
+      {/* بخش ۳: اکانت رجا */}
       <Card>
         <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-amber-50">
           <User className="h-5 w-5 text-amber-400" /> اکانت رزرو
