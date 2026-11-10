@@ -37,7 +37,7 @@ export function OrdersTable({ reservations }: Props) {
               <th className="px-5 py-3 font-medium">موبایل</th>
               <th className="px-5 py-3 font-medium">مسیر</th>
               <th className="px-5 py-3 font-medium">تاریخ سفر</th>
-              <th className="px-5 py-3 font-medium">وضعیت</th>
+              {/* <th className="px-5 py-3 font-medium">وضعیت</th> */}
             </tr>
           </thead>
           <tbody>
@@ -67,9 +67,9 @@ export function OrdersTable({ reservations }: Props) {
                 <td className="px-5 py-4 text-amber-100/60" dir="ltr">
                   {r.travel_date}
                 </td>
-                <td className="px-5 py-4">
+                {/* <td className="px-5 py-4">
                   <StatusBadge status={r.status} />
-                </td>
+                </td> */}
               </tr>
             ))}
             {reservations.length === 0 && (

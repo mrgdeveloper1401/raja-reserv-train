@@ -35,7 +35,7 @@ export function OrdersFilterBar({ currentSearch, currentDate }: Props) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-          placeholder="جستجو (کد، مسافر، مسیر)..."
+          placeholder="جستجو شماره تلفن"
           className="w-full rounded-lg border border-amber-500/20 bg-black/20 py-2 pr-10 pl-3 text-sm text-amber-50 outline-none focus:border-amber-500/50"
         />
       </div>

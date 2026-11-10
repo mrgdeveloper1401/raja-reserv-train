@@ -11,6 +11,10 @@ import {
   Calendar,
   Train,
   Loader2,
+  Users,
+  ArrowLeftRight,
+  BedDouble,
+  ListFilter,
 } from "lucide-react";
 import { Card } from "../../component/ui/Card";
 import { Button } from "../../component/ui/Button";
@@ -32,14 +36,18 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
     first_name: "",
     last_name: "",
     national_id: "",
-    gender: "male",
+    gender: "male", // مقدار پیش‌فرض
     phone: "",
     birth_date: "",
     // سفر
     origin: "",
     destination: "",
     travel_date: "",
+    to_date: "", // در حالت تک‌سفره خالی می‌ماند
     passenger_type: "normal",
+    trip_type: "outbound", // مقدار پیش‌فرض
+    coupe_type: "", // اختیاری
+    order_by: "clock", // مقدار پیش‌فرض
     // اکانت رجا
     raja_account_id: rajaAccounts[0]?.id || "",
   });
@@ -55,6 +63,7 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
     setIsLoading(true);
     setError("");
 
+    // اعتبارسنجی‌های سمت کلاینت
     if (formData.national_id.length !== 10) {
       setError("کد ملی باید ۱۰ رقم باشد.");
       setIsLoading(false);
@@ -67,9 +76,25 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
       return;
     }
 
+    if (formData.trip_type === "outbound_and_return" && !formData.to_date) {
+      setError("برای سفر رفت و برگشت، وارد کردن تاریخ برگشت الزامی است.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      console.log("Payload to send:", formData);
-      await createOrder(token, formData);
+      // اگر سفر تک‌سفره است، مطمئن می‌شویم to_date خالی (null) ارسال شود
+      const payload = {
+        ...formData,
+        to_date:
+          formData.trip_type === "outbound_and_return"
+            ? formData.to_date
+            : null,
+        coupe_type: formData.coupe_type || null, // اگر انتخاب نشد، null بفرست
+      };
+
+      console.log("Payload to send:", payload);
+      await createOrder(token, payload);
       router.push("/admin/orders");
       router.refresh();
     } catch (err: any) {
@@ -131,6 +156,21 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
+          {/* فیلد جنسیت اضافه شد */}
+          <div>
+            <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
+              <Users className="h-3.5 w-3.5" /> جنسیت
+            </label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50"
+            >
+              <option value="male">مرد</option>
+              <option value="female">زن</option>
+            </select>
+          </div>
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               <Phone className="h-3.5 w-3.5" /> موبایل
@@ -145,7 +185,6 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
-          {/* فیلد تاریخ تولد (میلادی) */}
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               <Calendar className="h-3.5 w-3.5" /> تاریخ تولد
@@ -168,6 +207,33 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
         <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-amber-50">
           <Train className="h-5 w-5 text-amber-400" /> اطلاعات سفر
         </h2>
+
+        {/* نوع سفر (تک سفره / رفت و برگشت) */}
+        <div className="mb-4 flex items-center gap-4 bg-[#0f0d0a] p-3 rounded-lg border border-amber-500/10">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="trip_type"
+              value="outbound"
+              checked={formData.trip_type === "outbound"}
+              onChange={handleChange}
+              className="text-amber-500 focus:ring-amber-500"
+            />
+            <span className="text-sm text-amber-50">تک سفره</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="trip_type"
+              value="outbound_and_return"
+              checked={formData.trip_type === "outbound_and_return"}
+              onChange={handleChange}
+              className="text-amber-500 focus:ring-amber-500"
+            />
+            <span className="text-sm text-amber-50">رفت و برگشت</span>
+          </label>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
@@ -193,10 +259,12 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50"
             />
           </div>
-          {/* فیلد تاریخ سفر (میلادی) */}
+
+          {/* تاریخ سفر */}
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
-              <Calendar className="h-3.5 w-3.5" /> تاریخ سفر
+              <Calendar className="h-3.5 w-3.5" /> تاریخ سفر{" "}
+              {formData.trip_type === "outbound_and_return" && "(رفت)"}
             </label>
             <input
               required
@@ -208,6 +276,25 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
+
+          {/* تاریخ برگشت (فقط در صورت انتخاب رفت و برگشت نمایش داده می‌شود) */}
+          {formData.trip_type === "outbound_and_return" && (
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
+                <Calendar className="h-3.5 w-3.5" /> تاریخ برگشت
+              </label>
+              <input
+                required
+                type="date"
+                name="to_date"
+                dir="ltr"
+                value={formData.to_date}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+              />
+            </div>
+          )}
+
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               نوع بلیط
@@ -226,12 +313,51 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
         </div>
       </Card>
 
-      {/* بخش ۳: اکانت رجا */}
+      {/* بخش ۳: فیلترها و اکانت رجا */}
       <Card>
         <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-amber-50">
-          <User className="h-5 w-5 text-amber-400" /> اکانت رزرو
+          <ListFilter className="h-5 w-5 text-amber-400" /> تنظیمات رزرو
         </h2>
-        <div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          {/* نوع کوپه */}
+          <div>
+            <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
+              <BedDouble className="h-3.5 w-3.5" /> نوع کوپه (اختیاری)
+            </label>
+            <select
+              name="coupe_type"
+              value={formData.coupe_type}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50"
+            >
+              <option value="">همه انواع</option>
+              <option value="four">چهار تخته</option>
+              <option value="six">شش تخته</option>
+              <option value="for_row">سالنی ۴ ردیفه</option>
+            </select>
+          </div>
+
+          {/* مرتب‌سازی */}
+          <div>
+            <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
+              <ArrowLeftRight className="h-3.5 w-3.5" /> مرتب‌سازی نتایج
+            </label>
+            <select
+              name="order_by"
+              value={formData.order_by}
+              onChange={handleChange}
+              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50"
+            >
+              <option value="clock">ساعت حرکت</option>
+              <option value="cheap">ارزان‌ترین</option>
+              <option value="expensive">گران‌ترین</option>
+              <option value="owner">مالک</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="border-t border-amber-500/10 pt-4">
           <label className="mb-1.5 block text-xs text-amber-100/60">
             اکانت رجا برای انجام رزرو
           </label>
