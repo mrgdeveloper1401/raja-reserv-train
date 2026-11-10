@@ -1,8 +1,8 @@
 // app/component/orders/OrdersFilterBar.tsx
 "use client";
-import { useState } from "react";
+import { useState, useTransition } from "react"; // useTransition را اضافه کنید
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, RefreshCw } from "lucide-react"; // آیکون RefreshCw را اضافه کنید
 
 interface Props {
   currentSearch: string;
@@ -16,14 +16,24 @@ export function OrdersFilterBar({ currentSearch, currentDate }: Props) {
   const [search, setSearch] = useState(currentSearch);
   const [date, setDate] = useState(currentDate);
 
+  // ✅ برای نمایش وضعیت لودینگ هنگام رفرش
+  const [isPending, startTransition] = useTransition();
+
   const applyFilters = () => {
     const params = new URLSearchParams(searchParams.toString());
     if (search) params.set("search", search);
     else params.delete("search");
     if (date) params.set("date", date);
     else params.delete("date");
-    params.set("page", "1"); // برگشت به صفحه اول
+    params.set("page", "1");
     router.push(`?${params.toString()}`);
+  };
+
+  // ✅ تابع مربوط به دکمه رفرش
+  const handleRefresh = () => {
+    startTransition(() => {
+      router.refresh();
+    });
   };
 
   return (
@@ -53,6 +63,17 @@ export function OrdersFilterBar({ currentSearch, currentDate }: Props) {
         className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-black hover:bg-amber-400"
       >
         اعمال فیلتر
+      </button>
+
+      {/* ✅ دکمه رفرش */}
+      <button
+        onClick={handleRefresh}
+        disabled={isPending}
+        className="flex items-center gap-2 rounded-lg border border-amber-500/20 px-3 py-2 text-sm text-amber-50 hover:bg-amber-500/10 disabled:opacity-50 transition"
+        title="بروزرسانی لیست"
+      >
+        <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+        {isPending ? "در حال..." : "بروزرسانی"}
       </button>
     </div>
   );
