@@ -20,6 +20,11 @@ import { Card } from "../../component/ui/Card";
 import { Button } from "../../component/ui/Button";
 import { createOrder } from "../../lib/api";
 import type { RajaAccountOption } from "../../types/index.type";
+import DatePicker, { DateObject } from "react-multi-date-picker";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
+import gregorian from "react-date-object/calendars/gregorian";
+import { toEnglishDigits } from "@/app/utils/config";
 
 interface Props {
   token: string;
@@ -30,6 +35,9 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [birthDate, setBirthDate] = useState<DateObject | null>(null);
+  const [travelDate, setTravelDate] = useState<DateObject | null>(null);
+  const [toDate, setToDate] = useState<DateObject | null>(null);
 
   const [formData, setFormData] = useState({
     // مسافر
@@ -58,7 +66,7 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -70,27 +78,42 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
       return;
     }
 
-    if (!formData.birth_date || !formData.travel_date) {
-      setError("تاریخ تولد و تاریخ سفر الزامی هستند.");
-      setIsLoading(false);
-      return;
-    }
+    // if (!formData.birth_date || !formData.travel_date) {
+    //   setError("تاریخ تولد و تاریخ سفر الزامی هستند.");
+    //   setIsLoading(false);
+    //   return;
+    // }
 
-    if (formData.trip_type === "outbound_and_return" && !formData.to_date) {
-      setError("برای سفر رفت و برگشت، وارد کردن تاریخ برگشت الزامی است.");
-      setIsLoading(false);
-      return;
-    }
+    // if (formData.trip_type === "outbound_and_return" && !formData.to_date) {
+    //   setError("برای سفر رفت و برگشت، وارد کردن تاریخ برگشت الزامی است.");
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     try {
+      //  تبدیل تاریخ تولد از شمسی به میلادی در لحظه ارسال
+      const gregorianBirthDate = birthDate
+        ?.convert(gregorian)
+        .format("YYYY-MM-DD");
+      const gregorianTravelDate = travelDate
+        ?.convert(gregorian)
+        .format("YYYY-MM-DD");
+      const gregorianToDate = toDate?.convert(gregorian).format("YYYY-MM-DD");
+
       // اگر سفر تک‌سفره است، مطمئن می‌شویم to_date خالی (null) ارسال شود
       const payload = {
         ...formData,
+        birth_date: gregorianBirthDate
+          ? toEnglishDigits(gregorianBirthDate)
+          : null,
+        travel_date: gregorianTravelDate
+          ? toEnglishDigits(gregorianTravelDate)
+          : null,
         to_date:
-          formData.trip_type === "outbound_and_return"
-            ? formData.to_date
+          formData.trip_type === "outbound_and_return" && gregorianToDate
+            ? toEnglishDigits(gregorianToDate)
             : null,
-        coupe_type: formData.coupe_type || null, // اگر انتخاب نشد، null بفرست
+        coupe_type: formData.coupe_type || null,
       };
 
       console.log("Payload to send:", payload);
@@ -189,7 +212,7 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               <Calendar className="h-3.5 w-3.5" /> تاریخ تولد
             </label>
-            <input
+            {/* <input
               required
               type="date"
               name="birth_date"
@@ -197,6 +220,16 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               value={formData.birth_date}
               onChange={handleChange}
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+            /> */}
+            <DatePicker
+              placeholder="برای نمایش کلیک کنید"
+              onChange={setBirthDate}
+              calendar={persian}
+              locale={persian_fa}
+              name="birth_date"
+              required
+              portal
+              inputClass="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
             />
           </div>
         </div>
@@ -266,7 +299,7 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               <Calendar className="h-3.5 w-3.5" /> تاریخ سفر{" "}
               {formData.trip_type === "outbound_and_return" && "(رفت)"}
             </label>
-            <input
+            {/* <input
               required
               type="date"
               name="travel_date"
@@ -274,6 +307,17 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               value={formData.travel_date}
               onChange={handleChange}
               className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+            /> */}
+            <DatePicker
+              placeholder="برای نمایش کلیک کنید"
+              inputClass="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+              required
+              portal
+              name="travel_date"
+              onChange={setTravelDate}
+              minDate={new Date()}
+              calendar={persian}
+              locale={persian_fa}
             />
           </div>
 
@@ -283,7 +327,7 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
               <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
                 <Calendar className="h-3.5 w-3.5" /> تاریخ برگشت
               </label>
-              <input
+              {/* <input
                 required
                 type="date"
                 name="to_date"
@@ -291,6 +335,17 @@ export function CreateOrderForm({ token, rajaAccounts }: Props) {
                 value={formData.to_date}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+              /> */}
+              <DatePicker
+                placeholder="برای نمایش کلیک کنید"
+                inputClass="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+                required
+                portal
+                name="to_date"
+                minDate={new Date().setDate(new Date().getDate() + 1)}
+                onChange={setToDate}
+                calendar={persian}
+                locale={persian_fa}
               />
             </div>
           )}
