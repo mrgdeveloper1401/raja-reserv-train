@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  CreditCard, // آیکون جدید برای حساب رجا
 } from "lucide-react";
 import { Card } from "../../component/ui/Card";
 import { Restitution, RestitutionsResponse } from "@/app/types/index.type";
@@ -26,16 +27,25 @@ const restitutionSchema = z.object({
   phone: z.string().min(10, "شماره موبایل باید حداقل ۱۰ رقم باشد"),
   train_number: z.string().min(1, "شماره قطار الزامی است"),
   hall_number: z.string().min(1, "شماره سالن الزامی است"),
+  raja_account_id: z.string().min(1, "انتخاب حساب رجا الزامی است"), // 👈 اضافه شد
 });
 
 type RestitutionFormValues = z.infer<typeof restitutionSchema>;
 
+// تایپ ساده برای حساب رجا
+interface RajaAccount {
+  id: number;
+  username: string;
+  is_active: boolean;
+}
+
 interface Props {
   initialData: RestitutionsResponse;
   token: string;
+  rajaAccounts: RajaAccount[]; // 👈 اضافه شد
 }
 
-export function RestitutionClient({ initialData, token }: Props) {
+export function RestitutionClient({ initialData, token, rajaAccounts }: Props) {
   const [restitutions, setRestitutions] = useState<Restitution[]>(
     initialData.items,
   );
@@ -59,6 +69,8 @@ export function RestitutionClient({ initialData, token }: Props) {
       phone: "",
       train_number: "",
       hall_number: "",
+      raja_account_id:
+        rajaAccounts.length > 0 ? String(rajaAccounts[0].id) : "", // مقدار پیش‌فرض
     },
   });
 
@@ -94,13 +106,20 @@ export function RestitutionClient({ initialData, token }: Props) {
   const onSubmit = async (data: RestitutionFormValues) => {
     setIsSubmitting(true);
     try {
+      // تبدیل raja_account_id به عدد قبل از ارسال
+      const payload = {
+        ...data,
+        raja_account_id: Number(data.raja_account_id),
+        status: "pending",
+      };
+
       const res = await fetch(`${baseUrl}/admin/restitution`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...data, status: "pending" }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -165,6 +184,39 @@ export function RestitutionClient({ initialData, token }: Props) {
               ثبت استرداد جدید
             </h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* 👈 فیلد انتخاب حساب رجا */}
+              <div>
+                <label className="block text-sm text-amber-100/60 mb-1">
+                  حساب رجا
+                </label>
+                <div className="relative">
+                  <select
+                    {...register("raja_account_id")}
+                    className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-amber-50 focus:outline-none focus:border-amber-500/50 transition appearance-none"
+                  >
+                    {rajaAccounts.length === 0 ? (
+                      <option value="">هیچ حسابی یافت نشد</option>
+                    ) : (
+                      rajaAccounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.username}{" "}
+                          {account.is_active ? "" : "(غیرفعال)"}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <CreditCard
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-100/30 pointer-events-none"
+                    size={16}
+                  />
+                </div>
+                {errors.raja_account_id && (
+                  <p className="text-rose-400 text-xs mt-1">
+                    {errors.raja_account_id.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm text-amber-100/60 mb-1">
                   سریال بلیط

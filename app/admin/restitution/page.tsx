@@ -1,6 +1,9 @@
 // app/admin/restitution/page.tsx
 import { cookies } from "next/headers";
-import { RestitutionsResponse } from "@/app/types/index.type";
+import {
+  RestitutionsResponse,
+  PaginatedRajaAccounts,
+} from "@/app/types/index.type";
 import { baseUrl } from "@/app/utils/config";
 import { RestitutionClient } from "@/app/component/restitution/RestitutionClient";
 
@@ -17,28 +20,42 @@ export default async function RestitutionPage() {
   }
 
   let initialData: RestitutionsResponse = { items: [], total: 0 };
+  let rajaAccounts: PaginatedRajaAccounts["items"] = [];
 
   try {
-    const res = await fetch(
-      `${baseUrl}/admin/restitution?page=1&page_size=20`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store", // همیشه دیتای تازه
-      },
-    );
+    // فچ همزمان لیست استردادها و حساب‌های رجا
+    const [restitutionRes, rajaAccountsRes] = await Promise.all([
+      fetch(`${baseUrl}/admin/restitution?page=1&page_size=20`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      }),
+      fetch(`${baseUrl}/auth/raja-accounts?page=1`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      }),
+    ]);
 
-    if (res.ok) {
-      const data = await res.json();
+    if (restitutionRes.ok) {
+      const data = await restitutionRes.json();
       initialData = {
         items: data.items || data.results || [],
         total: data.total || data.count || 0,
       };
     }
+
+    if (rajaAccountsRes.ok) {
+      const data = await rajaAccountsRes.json();
+      rajaAccounts = data.items || [];
+    }
   } catch (error) {
-    console.error("Failed to fetch restitutions:", error);
+    console.error("Failed to fetch data:", error);
   }
 
-  return <RestitutionClient initialData={initialData} token={token} />;
+  return (
+    <RestitutionClient
+      initialData={initialData}
+      token={token}
+      rajaAccounts={rajaAccounts}
+    />
+  );
 }
