@@ -8,6 +8,7 @@ import {
   Users,
   LogOut,
   Sparkles,
+  RotateCcw,
 } from "lucide-react";
 
 const items = [
@@ -15,7 +16,8 @@ const items = [
   { label: "سفارشات", href: "/admin/orders", icon: ListOrdered },
   { label: "مشتریان", href: "/admin/customers", icon: Users },
   { label: "ثبت سفارش", href: "/admin/create_order", icon: ListOrdered },
-  { label: "حساب رجا", href: "/admin/raja_account", icon: ListOrdered },
+  { label: "استرداد بلیط", href: "/admin/restitution", icon: RotateCcw },
+  { label: "حساب رجا", href: "/admin/raja_account", icon: Users },
 ];
 
 export default function AdminSidebar() {

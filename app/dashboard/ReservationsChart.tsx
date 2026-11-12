@@ -1,7 +1,14 @@
 // app/component/dashboard/ReservationsChart.tsx
 "use client";
 
-import { PieChart, Pie, ResponsiveContainer, Tooltip, Legend, Sector } from "recharts";
+import {
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  Sector,
+} from "recharts";
 import { DashboardChartStatus } from "../types/index.type";
 import { Card } from "../component/ui/Card";
 
@@ -16,6 +23,7 @@ const COLORS = {
   monitoring: "#3b82f6",
   booking: "#8b5cf6",
   redirect_gateway: "#06b6d4",
+  solve_captcha: "#facc15",
 };
 
 export function ReservationsChart({ stats }: Props) {
@@ -23,6 +31,11 @@ export function ReservationsChart({ stats }: Props) {
     { name: "موفق", value: stats.success_count, color: COLORS.success },
     { name: "ناموفق", value: stats.failed_count, color: COLORS.failed },
     { name: "انتظار", value: stats.pending_count, color: COLORS.pending },
+    {
+      name: "حل کپچا",
+      value: stats.solve_captcha,
+      color: COLORS.solve_captcha,
+    },
     {
       name: "در حال رصد",
       value: stats.monitoring_count,
@@ -88,4 +101,3 @@ export function ReservationsChart({ stats }: Props) {
     </Card>
   );
 }
-

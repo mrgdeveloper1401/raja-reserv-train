@@ -1,6 +1,6 @@
 // app/admin/page.tsx
 import { cookies } from "next/headers";
-import { Activity, CheckCircle2, XCircle } from "lucide-react";
+import { Activity, CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
 import { StatCard } from "../component/dashboard/StatCard";
 import { OrdersTable } from "../component/dashboard/OrdersTable";
 import {
@@ -63,6 +63,12 @@ export default async function AdminDashboardPage() {
               value={stats.failed_count}
               icon={XCircle}
               tone="rose"
+            />
+            <StatCard
+              label="حل کپچا"
+              value={stats.solve_captcha}
+              icon={ShieldAlert}
+              tone={"violet"}
             />
           </div>
           <OrdersTable reservations={reservations} />

@@ -78,6 +78,7 @@ export type ReservationStatus =
   | "booking"
   | "redirect_gateway"
   | "success"
+  | "captcha"
   | "failed";
 
 export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
@@ -87,6 +88,7 @@ export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
   redirect_gateway: "هدایت به درگاه پرداخت",
   success: "موفق",
   failed: "ناموفق",
+  captcha: "کپچا",
 };
 
 export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
@@ -96,6 +98,7 @@ export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
   redirect_gateway: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30",
   success: "text-emerald-300 bg-emerald-500/10 border-emerald-500/30",
   failed: "text-rose-300 bg-rose-500/10 border-rose-500/30",
+  captcha: "text-[#facc15] bg-[#facc15]-500/10 border-[#facc15]-500/30",
 };
 
 export interface Reservation {
@@ -113,6 +116,7 @@ export interface DashboardStatus {
   failed_count: number;
   success_count: number;
   active_orders_count: number;
+  solve_captcha: number;
 }
 
 export interface Order {
@@ -181,8 +185,7 @@ export interface DailyReport {
 
 // سفارشات
 export interface PaginatedOrders {
-  items: Reservation[]; // همون تایپ Reservation که قبلا ساختیم
-  total: number;
+  items: Reservation[];
   page: number;
   page_size: number;
 }
@@ -265,4 +268,22 @@ export interface DashboardChartStatus {
   success_count: number;
   failed_count: number;
   active_orders_count: number;
+  solve_captcha: number;
+}
+
+// مرجوعی ها
+export interface Restitution {
+  id: number;
+  serial_number: string;
+  phone: string;
+  train_number: string;
+  hall_number: string;
+  status: "success" | "failed" | "pending";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RestitutionsResponse {
+  items: Restitution[];
+  total: number;
 }
