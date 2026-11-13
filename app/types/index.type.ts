@@ -103,6 +103,8 @@ export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
 
 export interface Reservation {
   id: number;
+  order_id: number;
+  find_train_number: number;
   passenger_first_name: string;
   passenger_last_name: string;
   passenger_phone: string;

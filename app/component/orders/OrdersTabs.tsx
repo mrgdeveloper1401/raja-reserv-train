@@ -21,7 +21,7 @@ export function OrdersTabs({ currentTab, counts }: Props) {
   const tabs = [
     { key: "all", label: `همه (${counts.all})` },
     { key: "active", label: "فعال" },
-    { key: "success", label: "موفق" },
+    { key: "success", label: "هدایت به دگاه پرداخت" },
     { key: "failed", label: "ناموفق" },
   ];
 

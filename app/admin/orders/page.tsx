@@ -26,7 +26,7 @@ export default async function AdminOrdersPage({
   }
 
   // تنظیم پارامترها با مقادیر پیش‌فرض
-  const currentTab = params.tab || "all";
+  const currentTab = params.tab || "active";
   const currentSearch = params.search || "";
   const currentDate = params.date || "";
   const currentPage = parseInt(params.page || "1", 10);
@@ -48,8 +48,7 @@ export default async function AdminOrdersPage({
         </p>
       </div>
 
-      {/* کامپوننت‌های زیر باید "use client" باشند تا با URL بازی کنند */}
-      <OrdersTabs currentTab={currentTab} counts={{ all: data.total }} />
+      <OrdersTabs currentTab={currentTab} counts={{ all: data.items.length }} />
 
       <OrdersFilterBar
         currentSearch={currentSearch}
@@ -58,7 +57,7 @@ export default async function AdminOrdersPage({
 
       <OrdersDataTable
         reservations={data.items}
-        total={data.total}
+        total={data.items.length}
         page={currentPage}
         pageSize={data.page_size}
         currentSearch={currentSearch}

@@ -9,23 +9,10 @@ import {
   Mail,
   KeyRound,
 } from "lucide-react";
-import { baseUrl } from "@/app/utils/config";
 import { useRouter } from "next/navigation";
 
 type Mode = "login" | "forgot" | "verify";
 
-type LoginResponse = {
-  token: {
-    access_token: string;
-    token_type: string;
-    expires_in: number;
-  };
-  user: {
-    username: string;
-    email: string;
-    is_staff: boolean;
-  };
-};
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");

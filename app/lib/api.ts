@@ -241,3 +241,15 @@ export const getDashboardChartStatus = async (token: string) => {
   if (!res.ok) throw new Error("Failed to fetch chart data");
   return res.json() as Promise<DashboardChartStatus>;
 };
+
+export const deleteOrder = async (orderId: number, token: string) => {
+  const res = await fetch(`${baseUrl}/admin/orders/${orderId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  return res;
+};

@@ -1,6 +1,6 @@
 // app/admin/page.tsx
 import { cookies } from "next/headers";
-import { Activity, CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
+import { Activity, CheckCircle2, XCircle, ShieldAlert, BarChart3 } from "lucide-react";
 import { StatCard } from "../component/dashboard/StatCard";
 import { OrdersTable } from "../component/dashboard/OrdersTable";
 import {
@@ -29,6 +29,12 @@ export default async function AdminDashboardPage() {
     getDashboardChartStatus(token),
   ]);
 
+  const totalStats =
+    stats.active_orders_count +
+    stats.success_count +
+    stats.failed_count +
+    stats.solve_captcha;
+
   return (
     <div className="space-y-6">
       {/* سرصفحه */}
@@ -46,6 +52,12 @@ export default async function AdminDashboardPage() {
         {/* ستون سمت راست (کارت‌های آمار + جدول) */}
         <div className="lg:col-span-2 flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              label="مجموع کل فعالیت‌ها"
+              value={totalStats}
+              icon={BarChart3}
+              tone="blue"
+            />
             <StatCard
               label="سفارشات فعال"
               value={stats.active_orders_count}

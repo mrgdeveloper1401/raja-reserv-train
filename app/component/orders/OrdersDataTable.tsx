@@ -6,9 +6,11 @@ import { Card } from "../../component/ui/Card";
 import { StatusBadge } from "../../component/ui/StatusBadge";
 import { Button } from "../../component/ui/Button";
 import type { Reservation } from "../../types/index.type";
-import { useState } from "react";
-import { Terminal } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Loader2, Terminal, Trash2 } from "lucide-react";
 import { ReservationLogsModal } from "./ReservationLogsModal";
+import { useRouter } from "next/navigation";
+import { deleteOrder } from "@/app/lib/api";
 
 interface Props {
   reservations: Reservation[];
@@ -35,8 +37,10 @@ export function OrdersDataTable({
   const [selectedReservation, setSelectedReservation] = useState<number | null>(
     null,
   );
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  // تابع کمکی برای ساخت لینک صفحه‌بندی با حفظ فیلترهای فعلی
   const buildPageUrl = (newPage: number) => {
     const params = new URLSearchParams();
     if (currentTab !== "all") params.set("tab", currentTab);
@@ -44,6 +48,40 @@ export function OrdersDataTable({
     if (currentDate) params.set("date", currentDate);
     params.set("page", newPage.toString());
     return `?${params.toString()}`;
+  };
+
+  const handleDelete = async (orderId: number) => {
+    // 1. گرفتن تایید از کاربر
+    if (
+      !window.confirm(
+        "آیا از حذف این سفارش مطمئن هستید؟ این عمل قابل بازگشت نیست.",
+      )
+    ) {
+      return;
+    }
+
+    // 2. تنظیم حالت لودینگ
+    setDeletingId(orderId);
+
+    try {
+      // 3. ارسال درخواست به API
+      const res = await deleteOrder(orderId, token);
+
+      if (!res.ok) {
+        throw new Error("خطا در حذف سفارش");
+      }
+
+      // 4. پس از حذف موفق، صفحه را با دیتای جدید از سرور رفرش می‌کنیم
+      // چون شما از Server Components استفاده می‌کنید، router.refresh() بهترین راه است
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error) {
+      console.error(error);
+      alert("مشکلی در حذف سفارش پیش آمد.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -58,7 +96,9 @@ export function OrdersDataTable({
                 <th className="px-4 py-3 font-medium">موبایل</th>
                 <th className="px-4 py-3 font-medium">مسیر</th>
                 <th className="px-4 py-3 font-medium">تاریخ سفر</th>
+                <th className="px-4 py-3 font-medium">شماره قطار</th>
                 <th className="px-4 py-3 font-medium">وضعیت</th>
+                <th className="px-4 py-3 font-medium">حذف سفارش</th>
                 <th className="px-4 py-3 font-medium">لاگ</th>
               </tr>
             </thead>
@@ -83,8 +123,29 @@ export function OrdersDataTable({
                   <td className="px-4 py-4 text-amber-100/60" dir="ltr">
                     {r.travel_date}
                   </td>
+                  <td
+                    className="px-4 py-4 font-mono text-amber-100/80"
+                    dir="ltr"
+                  >
+                    {r.find_train_number}
+                  </td>
                   <td className="px-4 py-4">
                     <StatusBadge status={r.status} />
+                  </td>
+                  <td className="px-4 py-4">
+                    <button
+                      onClick={() => handleDelete(r.order_id)}
+                      disabled={deletingId === r.id || isPending}
+                      className="flex items-center gap-1 text-xs text-rose-500 hover:text-rose-400 disabled:opacity-50 transition"
+                      title="حذف سفارش"
+                    >
+                      {deletingId === r.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                      حذف
+                    </button>
                   </td>
                   <td className="px-4 py-4">
                     <button
@@ -101,7 +162,7 @@ export function OrdersDataTable({
               {reservations.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-4 py-16 text-center text-amber-100/30"
                   >
                     سفارشی با این فیلترها پیدا نشد
