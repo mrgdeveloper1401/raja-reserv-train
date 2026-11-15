@@ -290,3 +290,17 @@ export const updateOrder = async (
   }
   return res.json();
 };
+
+// app/lib/api.ts
+export const getOrderDetail = async (token: string, orderId: number) => {
+  const res = await fetch(`${baseUrl}/admin/order/${orderId}`, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    throw new Error("خطا در دریافت اطلاعات سفارش");
+  }
+  return res.json();
+};

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { OrdersTabs } from "../../component/orders/OrdersTabs";
 import { OrdersFilterBar } from "../../component/orders/OrdersFilterBar";
 import { OrdersDataTable } from "../../component/orders/OrdersDataTable";
-import { getOrders } from "../../lib/api";
+import { getOrders, getStations } from "../../lib/api";
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -32,13 +32,16 @@ export default async function AdminOrdersPage({
   const currentPage = parseInt(params.page || "1", 10);
 
   // واکشی دیتا از سرور
-  const data = await getOrders(token, {
-    tab: currentTab,
-    search: currentSearch,
-    date: currentDate,
-    page: currentPage,
-  });
-  
+  const [data, stations] = await Promise.all([
+    getOrders(token, {
+      tab: currentTab,
+      search: currentSearch,
+      date: currentDate,
+      page: currentPage,
+    }),
+    getStations(token), // <--- ایستگاه‌ها هم گرفته می‌شوند
+  ]);
+
   return (
     <div className="space-y-5">
       <div>
@@ -64,6 +67,7 @@ export default async function AdminOrdersPage({
         currentDate={currentDate}
         currentTab={currentTab}
         token={token}
+        stations={stations}
       />
     </div>
   );

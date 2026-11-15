@@ -312,7 +312,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60"><BedDouble className="h-3.5 w-3.5" /> نوع کوپه</label>
             <select name="coupe_type" value={formData.coupe_type} onChange={handleChange} className={inputClass}>
               <option value="all">همه انواع</option>
-              <option value="four">4 تخته 4 ستاره</option>
+              <option value="four_four">4 تخته 4 ستاره</option>
               <option value="four_five">4 تخته 5 ستاره</option>
               <option value="three">سه ستاره</option>
               <option value="five">5 ستاره</option>
@@ -391,7 +391,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>انصراف</Button>
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? (<><Loader2 className="h-4 w-4 animate-spin ml-2" /> در حال ثبت...</>) : ("ثبت سفارش و شروع رزرو")}
+          {isLoading ? (<><Loader2 className="h-4 w-4 animate-spin ml-2" /> در حال ثبت...</>) : ("ثبت سفارش")}
         </Button>
       </div>
     </form>

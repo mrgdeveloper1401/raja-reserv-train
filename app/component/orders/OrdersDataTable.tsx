@@ -10,7 +10,7 @@ import { useState, useTransition } from "react";
 import { Edit, Loader2, Terminal, Trash2 } from "lucide-react";
 import { ReservationLogsModal } from "./ReservationLogsModal";
 import { useRouter } from "next/navigation";
-import { deleteOrder } from "@/app/lib/api";
+import { deleteOrder, getOrderDetail } from "@/app/lib/api"; // getOrderDetail اضافه شد
 import { OrderEditModal } from "./OrderEditModal";
 
 interface Props {
@@ -22,6 +22,7 @@ interface Props {
   currentDate?: string;
   currentTab?: string;
   token: string;
+  stations: { Name: string }[];
 }
 
 export function OrdersDataTable({
@@ -33,6 +34,7 @@ export function OrdersDataTable({
   currentDate = "",
   currentTab = "all",
   token,
+  stations,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const [selectedReservation, setSelectedReservation] = useState<number | null>(
@@ -40,8 +42,26 @@ export function OrdersDataTable({
   );
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [editingOrder, setEditingOrder] = useState<Reservation | null>(null);
+
+  // تغییر: حالا به جای رکورد ساده، دیتای کامل سفارش ذخیره می‌شود
+  const [editingOrder, setEditingOrder] = useState<any | null>(null);
+  const [isFetchingOrder, setIsFetchingOrder] = useState<number | null>(null); // برای نمایش لودینگ روی دکمه
+
   const router = useRouter();
+
+  // تابع جدید برای واکشی اطلاعات کامل سفارش قبل از باز کردن Modal
+  const handleEditClick = async (orderId: number) => {
+    setIsFetchingOrder(orderId);
+    try {
+      const fullOrderData = await getOrderDetail(token, orderId);
+      setEditingOrder(fullOrderData);
+    } catch (error) {
+      console.error(error);
+      alert("خطا در دریافت اطلاعات سفارش");
+    } finally {
+      setIsFetchingOrder(null);
+    }
+  };
 
   const buildPageUrl = (newPage: number) => {
     const params = new URLSearchParams();
@@ -53,7 +73,6 @@ export function OrdersDataTable({
   };
 
   const handleDelete = async (orderId: number) => {
-    // 1. گرفتن تایید از کاربر
     if (
       !window.confirm(
         "آیا از حذف این سفارش مطمئن هستید؟ این عمل قابل بازگشت نیست.",
@@ -62,19 +81,15 @@ export function OrdersDataTable({
       return;
     }
 
-    // 2. تنظیم حالت لودینگ
     setDeletingId(orderId);
 
     try {
-      // 3. ارسال درخواست به API
       const res = await deleteOrder(orderId, token);
 
       if (!res.ok) {
         throw new Error("خطا در حذف سفارش");
       }
 
-      // 4. پس از حذف موفق، صفحه را با دیتای جدید از سرور رفرش می‌کنیم
-      // چون شما از Server Components استفاده می‌کنید، router.refresh() بهترین راه است
       startTransition(() => {
         router.refresh();
       });
@@ -143,13 +158,18 @@ export function OrdersDataTable({
                     </button>
                   </td>
                   <td className="px-4 py-4">
-                    {/* دکمه ویرایش */}
+                    {/* دکمه ویرایش: حالا دیتا را فچ می‌کند */}
                     <button
-                      onClick={() => setEditingOrder(r)}
-                      className="text-amber-400 hover:text-amber-300"
+                      onClick={() => handleEditClick(r.id)}
+                      disabled={isFetchingOrder === r.id}
+                      className="text-amber-400 hover:text-amber-300 disabled:opacity-50"
                       title="ویرایش"
                     >
-                      <Edit className="h-4 w-4" />
+                      {isFetchingOrder === r.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Edit className="h-4 w-4" />
+                      )}
                     </button>
                   </td>
                   {/* مشاهده لاگها */}
@@ -202,7 +222,6 @@ export function OrdersDataTable({
               {/* شماره صفحات */}
               {Array.from({ length: totalPages }).map((_, i) => {
                 const p = i + 1;
-                // فقط ۵ صفحه اطراف صفحه فعلی را نشان بده تا UI شلوغ نشود
                 if (
                   totalPages > 7 &&
                   Math.abs(p - page) > 2 &&
@@ -251,7 +270,7 @@ export function OrdersDataTable({
         )}
       </Card>
 
-      {/* ✅ مودال لاگ‌ها اینجا قرار می‌گیرد */}
+      {/* ✅ مودال لاگ‌ها */}
       {selectedReservation && (
         <ReservationLogsModal
           reservationId={selectedReservation}
@@ -260,10 +279,12 @@ export function OrdersDataTable({
         />
       )}
 
+      {/* ✅ مودال ویرایش */}
       {editingOrder && (
         <OrderEditModal
           order={editingOrder}
           token={token}
+          stations={stations}
           onClose={() => setEditingOrder(null)}
           onRefresh={() => {
             setEditingOrder(null);
