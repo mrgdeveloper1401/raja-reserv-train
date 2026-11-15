@@ -27,9 +27,9 @@ export default function AdminSidebar() {
     <aside className="hidden lg:flex w-64 shrink-0 flex-col border-l border-amber-500/10 bg-[#0f0d0a]">
       {/* لوگو */}
       <div className="flex h-16 items-center gap-2 border-b border-amber-500/10 px-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30">
+        <Link href={'/admin'} className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30">
           <Sparkles className="h-5 w-5 text-[#0f0d0a]" />
-        </span>
+        </Link>
         <div>
           <p className="text-sm font-black bg-gradient-to-l from-amber-400 to-orange-500 bg-clip-text text-transparent">
             رجا

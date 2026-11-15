@@ -156,7 +156,6 @@ export function RajaAccountsTable({ data, token, currentSearch }: Props) {
               <tr className="border-b border-amber-500/10 bg-[#0f0d0a]/60 text-right text-xs text-amber-100/40">
                 <th className="px-5 py-3 font-medium">شناسه</th>
                 <th className="px-5 py-3 font-medium">شماره همراه رجا</th>
-                <th className="px-5 py-3 font-medium">وضعیت</th>
                 <th className="px-5 py-3 font-medium">عملیات</th>
               </tr>
             </thead>
@@ -166,44 +165,46 @@ export function RajaAccountsTable({ data, token, currentSearch }: Props) {
                   key={acc.id}
                   className="border-b border-amber-500/5 hover:bg-amber-500/5"
                 >
-                  <td className="px-5 py-4 font-mono text-amber-400">
+                  {/* ستون شناسه */}
+                  <td className="px-5 py-4 font-mono text-amber-400 whitespace-nowrap">
                     #{acc.id}
                   </td>
-                  <td className="px-5 py-4 text-amber-50 flex items-center gap-2">
-                    <UserCircle className="h-4 w-4 text-amber-500/50" />
-                    <span dir="ltr" className="font-mono">
-                      {acc.username}
-                    </span>
+
+                  {/* ستون شماره همراه */}
+                  <td className="px-5 py-4 text-amber-50 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <UserCircle className="h-4 w-4 text-amber-500/50" />
+                      <span dir="ltr" className="font-mono">
+                        {acc.username}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs border ${acc.is_active ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10" : "text-rose-400 border-rose-500/30 bg-rose-500/10"}`}
-                    >
-                      {acc.is_active ? "فعال" : "غیرفعال"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 flex items-center gap-4">
-                    <button
-                      onClick={() => openEditModal(acc)}
-                      className="text-amber-400 hover:text-amber-300"
-                      title="ویرایش"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(acc.id)}
-                      className="text-rose-400 hover:text-rose-300"
-                      title="حذف"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+
+                  {/* ستون عملیات */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => openEditModal(acc)}
+                        className="text-amber-400 hover:text-amber-300 transition-colors"
+                        title="ویرایش"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(acc.id)}
+                        className="text-rose-400 hover:text-rose-300 transition-colors"
+                        title="حذف"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {data.items.length === 0 && (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={3} // تعداد ستون‌ها 3 است، نه 4
                     className="px-5 py-12 text-center text-amber-100/30"
                   >
                     اکانتی یافت نشد
@@ -290,27 +291,6 @@ export function RajaAccountsTable({ data, token, currentSearch }: Props) {
                   className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
                 />
               </div>
-
-              {/* سوییچ فعال/غیرفعال (فقط در حالت ویرایش نشان داده می‌شود) */}
-              {editingAccount && (
-                <div className="flex items-center gap-2 pt-2">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={formData.is_active}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_active: e.target.checked })
-                    }
-                    className="h-4 w-4 rounded border-amber-500/20 bg-[#0f0d0a] text-amber-500 focus:ring-amber-500/50"
-                  />
-                  <label
-                    htmlFor="is_active"
-                    className="text-sm text-amber-100/80"
-                  >
-                    اکانت فعال باشد
-                  </label>
-                </div>
-              )}
 
               <div className="flex justify-end gap-2 pt-4 border-t border-amber-500/10">
                 <Button

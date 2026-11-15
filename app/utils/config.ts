@@ -1,6 +1,9 @@
 // app/utils/config.ts
 import axios from "axios";
 import { NextResponse } from "next/server";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
+import { DateObject } from "react-multi-date-picker";
 
 // app/utils/config.ts
 export const response = NextResponse;
@@ -27,4 +30,13 @@ export const toEnglishDigits = (str: string) => {
     if (index > -1) return index.toString();
     return arabicDigits.indexOf(d).toString();
   });
+};
+
+export const convertIntoDate = (d: string) => {
+  const date = new DateObject({
+    date: d,
+    calendar: persian,
+    locale: persian_fa,
+  });
+  return date;
 };

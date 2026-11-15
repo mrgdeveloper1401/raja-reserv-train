@@ -92,8 +92,6 @@ export function OrdersDataTable({
             <thead>
               <tr className="border-b border-amber-500/10 bg-[#0f0d0a]/60 text-right text-xs text-amber-100/40">
                 <th className="px-4 py-3 font-medium">شناسه</th>
-                <th className="px-4 py-3 font-medium">مسافر</th>
-                <th className="px-4 py-3 font-medium">موبایل</th>
                 <th className="px-4 py-3 font-medium">مسیر</th>
                 <th className="px-4 py-3 font-medium">تاریخ سفر</th>
                 <th className="px-4 py-3 font-medium">شماره قطار</th>
@@ -112,12 +110,6 @@ export function OrdersDataTable({
                     #{r.id}
                   </td>
                   <td className="px-4 py-4 text-amber-50">
-                    {r.passenger_first_name} {r.passenger_last_name}
-                  </td>
-                  <td className="px-4 py-4 text-amber-100/60" dir="ltr">
-                    {r.passenger_phone}
-                  </td>
-                  <td className="px-4 py-4 text-amber-50">
                     {r.origin} ← {r.destination}
                   </td>
                   <td className="px-4 py-4 text-amber-100/60" dir="ltr">
@@ -127,7 +119,7 @@ export function OrdersDataTable({
                     className="px-4 py-4 font-mono text-amber-100/80"
                     dir="ltr"
                   >
-                    {r.find_train_number}
+                    {r.find_train_number ?? "-"}
                   </td>
                   <td className="px-4 py-4">
                     <StatusBadge status={r.status} />

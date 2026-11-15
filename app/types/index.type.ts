@@ -75,7 +75,7 @@ export interface TimeRange {
 export type ReservationStatus =
   | "pending"
   | "monitoring"
-  | "booking"
+  | "waiting_start"
   | "redirect_gateway"
   | "success"
   | "captcha"
@@ -84,7 +84,7 @@ export type ReservationStatus =
 export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
   pending: "انتظار",
   monitoring: "در حال رصد",
-  booking: "در حال رزرو",
+  waiting_start: "در حال رزرو",
   redirect_gateway: "هدایت به درگاه پرداخت",
   success: "موفق",
   failed: "ناموفق",
@@ -94,7 +94,7 @@ export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
 export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
   pending: "text-amber-300 bg-amber-500/10 border-amber-500/30",
   monitoring: "text-blue-300 bg-blue-500/10 border-blue-500/30",
-  booking: "text-violet-300 bg-violet-500/10 border-violet-500/30",
+  waiting_start: "text-violet-300 bg-violet-500/10 border-violet-500/30",
   redirect_gateway: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30",
   success: "text-emerald-300 bg-emerald-500/10 border-emerald-500/30",
   failed: "text-rose-300 bg-rose-500/10 border-rose-500/30",
@@ -104,13 +104,11 @@ export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
 export interface Reservation {
   id: number;
   order_id: number;
-  find_train_number: number;
-  passenger_first_name: string;
-  passenger_last_name: string;
-  passenger_phone: string;
+  train_number: number;
   origin: string;
   destination: string;
   travel_date: string; // YYYY-MM-DD
+  phone?: string | null;
   status: ReservationStatus;
 }
 
@@ -203,7 +201,6 @@ export interface OrdersQuery {
 export interface PassengerListItem {
   id: number;
   full_name: string;
-  phone: string;
   orders_count: number;
   last_order_date: string | null;
 }

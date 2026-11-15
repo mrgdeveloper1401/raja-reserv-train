@@ -67,7 +67,6 @@ export function CustomersTable({
           <thead>
             <tr className="border-b border-amber-500/10 bg-[#0f0d0a]/60 text-right text-xs text-amber-100/40">
               <th className="px-5 py-3 font-medium">مشتری</th>
-              <th className="px-5 py-3 font-medium">تماس</th>
               <th className="px-5 py-3 font-medium">تعداد سفارش</th>
               <th className="px-5 py-3 font-medium">آخرین سفارش</th>
               <th className="px-5 py-3 font-medium"></th>
@@ -88,15 +87,6 @@ export function CustomersTable({
                       {c.full_name}
                     </span>
                   </div>
-                </td>
-                <td className="px-5 py-4">
-                  <span
-                    className="flex items-center gap-1.5 font-mono text-amber-100/70"
-                    dir="ltr"
-                  >
-                    <Phone className="h-3.5 w-3.5 text-amber-400/60" />
-                    {c.phone}
-                  </span>
                 </td>
                 <td className="px-5 py-4">
                   <span className="flex items-center gap-1.5 text-amber-100/70">
