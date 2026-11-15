@@ -289,3 +289,7 @@ export interface RestitutionsResponse {
   items: Restitution[];
   total: number;
 }
+
+export interface StationOption {
+  Name: string;
+}

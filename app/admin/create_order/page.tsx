@@ -1,14 +1,18 @@
 // app/admin/create_order/page.tsx
 import { cookies } from "next/headers";
 import { CreateOrderForm } from "../../component/orders/CreateOrderForm";
-import { getRajaAccountOptions } from "../../lib/api";
+import { getRajaAccountOptions, getStations } from "../../lib/api"; // ایمپورت تابع جدید
 
 export default async function CreateOrderPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
   if (!token) return null;
 
-  const rajaAccounts = await getRajaAccountOptions(token);
+  // دریافت همزمان دیتای اکانت‌ها و ایستگاه‌ها برای سرعت بیشتر
+  const [rajaAccounts, stations] = await Promise.all([
+    getRajaAccountOptions(token),
+    getStations(token),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -18,7 +22,11 @@ export default async function CreateOrderPage() {
           اطلاعات مسافر و سفر را وارد کنید تا یک رزرو در وضعیت انتظار ایجاد شود.
         </p>
       </div>
-      <CreateOrderForm token={token} rajaAccounts={rajaAccounts} />
+      <CreateOrderForm 
+        token={token} 
+        rajaAccounts={rajaAccounts} 
+        stations={stations} 
+      />
     </div>
   );
 }

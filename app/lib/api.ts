@@ -11,6 +11,7 @@ import type {
   PassengerDetail,
   RajaAccountOption,
   Reservation,
+  StationOption,
 } from "../types/index.type";
 
 // تابع کمکی برای درخواست‌های سمت سرور
@@ -252,4 +253,19 @@ export const deleteOrder = async (orderId: number, token: string) => {
   });
 
   return res;
+};
+
+export const getStations = async (token: string): Promise<StationOption[]> => {
+  const res = await fetch(`${baseUrl}/core/station`, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("خطا در دریافت لیست ایستگاه‌ها");
+
+  const data = await res.json();
+  // فقط Name را نگه می‌داریم
+  return data.map((item: any) => ({ Name: item.Name }));
 };

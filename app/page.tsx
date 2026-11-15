@@ -10,6 +10,7 @@ import {
   Sparkles,
   CheckCircle2,
 } from "lucide-react";
+import { cookies } from "next/headers";
 
 const stats = [
   { label: "کاربر فعال", value: "+۱۲٬۰۰۰", icon: Users },
@@ -51,7 +52,10 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
   return (
     <main className="bg-[#0f0d0a]">
       {/* ================= HERO ================= */}
@@ -88,7 +92,7 @@ export default function HomePage() {
               href="/login"
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-l from-amber-400 to-orange-500 px-7 py-3.5 font-bold text-[#0f0d0a] shadow-lg shadow-amber-500/25 transition hover:shadow-amber-500/40 hover:brightness-110 active:scale-[0.98]"
             >
-              شروع کن
+              {token ? "داشبورد" : "شروع کن"}
               <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" />
             </Link>
             <Link
@@ -126,8 +130,8 @@ export default function HomePage() {
               همه چیزی که نیاز داری، در یک جا
             </h2>
             <p className="mt-4 text-sm leading-7 text-amber-100/40">
-              مجموعه‌ای از قابلیت‌های حرفه‌ای که تجربه‌ی شما را ساده‌تر و لذت‌بخش‌تر
-              می‌کند.
+              مجموعه‌ای از قابلیت‌های حرفه‌ای که تجربه‌ی شما را ساده‌تر و
+              لذت‌بخش‌تر می‌کند.
             </p>
           </div>
 
