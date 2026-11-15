@@ -7,10 +7,11 @@ import { StatusBadge } from "../../component/ui/StatusBadge";
 import { Button } from "../../component/ui/Button";
 import type { Reservation } from "../../types/index.type";
 import { useState, useTransition } from "react";
-import { Loader2, Terminal, Trash2 } from "lucide-react";
+import { Edit, Loader2, Terminal, Trash2 } from "lucide-react";
 import { ReservationLogsModal } from "./ReservationLogsModal";
 import { useRouter } from "next/navigation";
 import { deleteOrder } from "@/app/lib/api";
+import { OrderEditModal } from "./OrderEditModal";
 
 interface Props {
   reservations: Reservation[];
@@ -39,6 +40,7 @@ export function OrdersDataTable({
   );
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [editingOrder, setEditingOrder] = useState<Reservation | null>(null);
   const router = useRouter();
 
   const buildPageUrl = (newPage: number) => {
@@ -97,6 +99,7 @@ export function OrdersDataTable({
                 <th className="px-4 py-3 font-medium">شماره قطار</th>
                 <th className="px-4 py-3 font-medium">وضعیت</th>
                 <th className="px-4 py-3 font-medium">حذف سفارش</th>
+                <th className="px-4 py-3 font-medium">ویرایش سفارش</th>
                 <th className="px-4 py-3 font-medium">لاگ</th>
               </tr>
             </thead>
@@ -119,7 +122,7 @@ export function OrdersDataTable({
                     className="px-4 py-4 font-mono text-amber-100/80"
                     dir="ltr"
                   >
-                    {r.find_train_number ?? "-"}
+                    {r.train_number ?? "-"}
                   </td>
                   <td className="px-4 py-4">
                     <StatusBadge status={r.status} />
@@ -139,6 +142,17 @@ export function OrdersDataTable({
                       حذف
                     </button>
                   </td>
+                  <td className="px-4 py-4">
+                    {/* دکمه ویرایش */}
+                    <button
+                      onClick={() => setEditingOrder(r)}
+                      className="text-amber-400 hover:text-amber-300"
+                      title="ویرایش"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                  </td>
+                  {/* مشاهده لاگها */}
                   <td className="px-4 py-4">
                     <button
                       onClick={() => setSelectedReservation(r.id)}
@@ -243,6 +257,18 @@ export function OrdersDataTable({
           reservationId={selectedReservation}
           token={token}
           onClose={() => setSelectedReservation(null)}
+        />
+      )}
+
+      {editingOrder && (
+        <OrderEditModal
+          order={editingOrder}
+          token={token}
+          onClose={() => setEditingOrder(null)}
+          onRefresh={() => {
+            setEditingOrder(null);
+            startTransition(() => router.refresh());
+          }}
         />
       )}
     </>

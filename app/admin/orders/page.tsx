@@ -38,7 +38,7 @@ export default async function AdminOrdersPage({
     date: currentDate,
     page: currentPage,
   });
-
+  
   return (
     <div className="space-y-5">
       <div>

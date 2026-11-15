@@ -269,3 +269,24 @@ export const getStations = async (token: string): Promise<StationOption[]> => {
   // فقط Name را نگه می‌داریم
   return data.map((item: any) => ({ Name: item.Name }));
 };
+
+export const updateOrder = async (
+  token: string,
+  orderId: number,
+  data: any,
+) => {
+  const res = await fetch(`${baseUrl}/admin/order/${orderId}`, {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "خطا در ویرایش سفارش");
+  }
+  return res.json();
+};
