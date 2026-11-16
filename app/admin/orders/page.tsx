@@ -39,7 +39,7 @@ export default async function AdminOrdersPage({
       date: currentDate,
       page: currentPage,
     }),
-    getStations(token), // <--- ایستگاه‌ها هم گرفته می‌شوند
+    getStations(token), // دریافت تمامی ایستگاه ها
   ]);
 
   return (

@@ -63,7 +63,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
   const [formData, setFormData] = useState({
     origin: "",
     destination: "",
-    passenger_type: "normal",
+    passenger_type: "family",
     trip_type: "outbound",
     raja_account_id: rajaAccounts[0]?.id || "",
 
@@ -120,6 +120,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
     setPassengers(updatedPassengers);
   };
 
+  // ارسال دیتا
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -138,6 +139,35 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
     // بررسی شماره موبایل
     if (!formData.phone || formData.phone.trim() === "") {
       setError("شماره موبایل رزرو الزامی هست");
+      setIsLoading(false);
+      return;
+    }
+
+    // چک کردن تعداد مسافر
+    if (
+      Number(formData.adult_number) + Number(formData.baby_number) >
+      passengers.length
+    ) {
+      console.log(
+        `one: ${passengers.length} & ${formData.adult_number + formData.baby_number}`,
+      );
+
+      setError("تعداد افراد بیش تر از بلوک های مسافر هست ");
+      setIsLoading(false);
+      return;
+    }
+
+    // چک کردن تعداد مسافر
+    if (
+      Number(formData.adult_number) + Number(formData.baby_number) <
+      passengers.length
+    ) {
+      console.log(
+        `two: ${passengers.length} & ${formData.adult_number + formData.baby_number}`,
+      );
+      setError(
+        "تعداد بلوک های مسافر بیش تر از تعداد بزرگسال و تعداد خردسال است",
+      );
       setIsLoading(false);
       return;
     }
@@ -181,7 +211,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
         passengers: passengers.map((p) => ({
           first_name: p.first_name,
           last_name: p.last_name,
-          national_id: p.national_id,
+          national_id: toEnglishDigits(p.national_id),
           birth_date: p.birth_date,
         })),
       };

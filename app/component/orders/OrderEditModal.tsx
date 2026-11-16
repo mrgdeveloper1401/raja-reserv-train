@@ -12,6 +12,7 @@ import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
 import { toEnglishDigits } from "@/app/utils/config";
 import { StationCombobox } from "../ui/StationCombobox";
+import { EditOrderType, Passenger } from "@/app/types/index.type";
 
 interface PassengerFormData {
   first_name: string;
@@ -21,7 +22,7 @@ interface PassengerFormData {
 }
 
 interface Props {
-  order: any;
+  order: EditOrderType;
   token: string;
   stations: { Name: string }[]; // <--- اضافه شد
   onClose: () => void;
@@ -66,10 +67,10 @@ export function OrderEditModal({
 
   // استیت مسافران (مقداردهی اولیه از order.passengers)
   const [passengers, setPassengers] = useState<PassengerFormData[]>(
-    order.passengers?.map((p: any) => ({
+    order.passengers?.map((p: Passenger) => ({
       first_name: p.first_name,
       last_name: p.last_name,
-      national_id: p.national_id,
+      national_id: toEnglishDigits(p.national_id),
       birth_date: p.birth_date, // تاریخ‌ها به صورت میلادی (YYYY-MM-DD) هستند
     })) || [{ first_name: "", last_name: "", national_id: "", birth_date: "" }],
   );
@@ -138,7 +139,7 @@ export function OrderEditModal({
         return;
       }
 
-      const payload: any = {
+      const payload: EditOrderType = {
         ...formData,
         travel_date: gregorianTravelDate
           ? toEnglishDigits(gregorianTravelDate)

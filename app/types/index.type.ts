@@ -1,54 +1,55 @@
 // types/index.type.ts
 
 // ---------- کاربران ----------
-export type UserRole = "customer" | "operator" | "admin";
-
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   phone: string;
-  role: UserRole;
-  createdAt: string;
+  created_at: string;
 }
 
 // ---------- مسافران ----------
-export type Gender = "male" | "female";
 
 export interface Passenger {
   id: string;
-  firstName: string;
-  lastName: string;
-  nationalId: string; // کد ملی تایید شده
-  gender: Gender;
-  birthDate: string; // YYYY-MM-DD (میلادی برای ذخیره)
-  phone: string;
-  userId: string;
+  first_name: string;
+  last_name: string;
+  national_id: string;
+  birth_date: string;
+  is_adult: boolean;
 }
 
 // ---------- قطار ----------
-export type TrainType = "3star" | "4star" | "5star" | "6bunk" | "saloon";
+export type TrainType =
+  | "3_star_6_coupe"
+  | "4_star_5_coupe"
+  | "4_star_4_coupe"
+  | "5_star"
+  | "saloon";
 
 export const TRAIN_TYPE_LABEL: Record<TrainType, string> = {
-  "3star": "سه ستاره",
-  "4star": "چهار ستاره",
-  "5star": "پنج ستاره",
-  "6bunk": "شش تخته",
+  "3_star_6_coupe": "سه ستاره",
+  "4_star_5_coupe": "چهار ستاره پنج تخته",
+  "4_star_4_coupe": "چهار ستاره چهار تخته",
+  "5_star": "پنج ستاره",
   saloon: "سالنی",
 };
 
 // ---------- سفارش ----------
 export type OrderStatus =
-  | "pending" // در انتظار شروع فروش
-  | "processing" // در حال پردازش
-  | "booking" // ورود به رزرو
-  | "success" // رزرو موفق
-  | "payment_ready" // موفق تا مرحله پرداخت
-  | "failed" // ناموفق
-  | "cancelled"; // لغو شده
+  | "waiting_start"
+  | "pending"
+  | "processing"
+  | "booking"
+  | "success"
+  | "payment_ready"
+  | "failed"
+  | "cancelled";
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
-  pending: "در انتظار شروع فروش",
+  waiting_start: "اماده شروع",
+  pending: "انتظار",
   processing: "در حال پردازش",
   booking: "ورود به رزرو",
   success: "رزرو موفق",
@@ -58,6 +59,7 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 };
 
 export const ORDER_STATUS_COLOR: Record<OrderStatus, string> = {
+  waiting_start: "text-slate-300 bg-slate-500/10 border-slate-500/30",
   pending: "text-amber-300 bg-amber-500/10 border-amber-500/30",
   processing: "text-blue-300 bg-blue-500/10 border-blue-500/30",
   booking: "text-violet-300 bg-violet-500/10 border-violet-500/30",
@@ -108,7 +110,7 @@ export interface Reservation {
   origin: string;
   destination: string;
   travel_date: string; // YYYY-MM-DD
-  phone?: string | null;
+  phone?: string;
   status: ReservationStatus;
 }
 
@@ -216,7 +218,6 @@ export interface CreatePassengerPayload {
   first_name: string;
   last_name: string;
   national_id: string;
-  gender: string;
   birth_date?: string | null;
   phone: string;
 }
@@ -226,7 +227,7 @@ export interface PassengerOrder {
   origin: string;
   destination: string;
   travel_date: string;
-  passenger_type: string;
+  passenger_type: "male" | "family" | "famale";
 }
 
 export interface PassengerDetail {
@@ -234,7 +235,6 @@ export interface PassengerDetail {
   first_name: string;
   last_name: string;
   national_id: string;
-  gender: "male" | "female";
   birth_date: string | null;
   phone: string;
   orders: PassengerOrder[];
@@ -289,4 +289,33 @@ export interface RestitutionsResponse {
 
 export interface StationOption {
   Name: string;
+}
+
+export interface EditOrderType {
+  id: number;
+  origin: string;
+  destination: string;
+  travel_date?: string | null;
+  to_date?: string;
+  passenger_type: "male" | "family" | "famale";
+  trip_type: "outbound" | "outbound_and_return";
+  raja_account_id?: number | null;
+  coupe_type?: "all" | "four" | "four_five" | "three" | "five" | "salon" | null;
+  is_exclusive?: boolean;
+  departure_time_from?: number | null;
+  departure_time_to?: number | null;
+  from_price?: number | null;
+  to_price?: number | null;
+  train_number?: number | null;
+  phone: string;
+  adult_number: number;
+  baby_number: number;
+  passengers: Passenger[];
+  status:
+    | "waiting_start"
+    | "pending"
+    | "monitoring"
+    | "redirect_gateway"
+    | "failed"
+    | "captcha";
 }

@@ -127,9 +127,9 @@ export default async function CustomerDetailPage({
                       {o.travel_date}
                     </td>
                     <td className="px-5 py-4 text-amber-100/60">
-                      {o.passenger_type === "man"
+                      {o.passenger_type === "male"
                         ? "ویژه برادران"
-                        : o.passenger_type === "woman"
+                        : o.passenger_type === "famale"
                           ? "ویژه خواهران"
                           : "عادی"}
                     </td>
