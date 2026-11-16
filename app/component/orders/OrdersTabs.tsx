@@ -4,10 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 interface Props {
   currentTab: string;
-  counts: { all: number };
 }
 
-export function OrdersTabs({ currentTab, counts }: Props) {
+export function OrdersTabs({ currentTab }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -19,7 +18,7 @@ export function OrdersTabs({ currentTab, counts }: Props) {
   };
 
   const tabs = [
-    { key: "all", label: `همه (${counts.all})` },
+    { key: "all", label: `همه` },
     { key: "active", label: "فعال" },
     { key: "success", label: "هدایت به دگاه پرداخت" },
     { key: "failed", label: "ناموفق" },

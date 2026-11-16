@@ -84,7 +84,7 @@ export type ReservationStatus =
 export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
   pending: "انتظار",
   monitoring: "در حال رصد",
-  waiting_start: "در حال رزرو",
+  waiting_start: "آماده رزرو",
   redirect_gateway: "هدایت به درگاه پرداخت",
   success: "موفق",
   failed: "ناموفق",

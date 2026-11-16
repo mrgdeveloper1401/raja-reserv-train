@@ -41,7 +41,7 @@ export function ReservationsChart({ stats }: Props) {
       value: stats.monitoring_count,
       color: COLORS.monitoring,
     },
-    { name: "در حال رزرو", value: stats.booking_count, color: COLORS.booking },
+    { name: "آماده رزرو", value: stats.booking_count, color: COLORS.booking },
     {
       name: "هدایت به درگاه",
       value: stats.redirect_gateway_count,

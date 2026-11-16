@@ -3,6 +3,8 @@ import axios from "axios";
 import { NextResponse } from "next/server";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
+import gregorian from "react-date-object/calendars/gregorian";
+import gregorian_en from "react-date-object/locales/gregorian_en";
 import { DateObject } from "react-multi-date-picker";
 
 // app/utils/config.ts
@@ -33,10 +35,13 @@ export const toEnglishDigits = (str: string) => {
 };
 
 export const convertIntoDate = (d: string) => {
+  // ۱. ابتدا رشته میلادی را با تقویم میلادی می‌خوانیم
   const date = new DateObject({
     date: d,
-    calendar: persian,
-    locale: persian_fa,
+    calendar: gregorian,
+    locale: gregorian_en,
   });
-  return date;
+  
+  // ۲. سپس آن را به تقویم شمسی تبدیل می‌کنیم
+  return date.convert(persian, persian_fa);
 };

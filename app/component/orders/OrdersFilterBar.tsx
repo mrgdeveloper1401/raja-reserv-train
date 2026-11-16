@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Calendar, RefreshCw } from "lucide-react"; // آیکون RefreshCw را اضافه کنید
 
 interface Props {
-  currentSearch: string;
+  currentSearch?: string;
   currentDate: string;
 }
 
@@ -37,8 +37,8 @@ export function OrdersFilterBar({ currentSearch, currentDate }: Props) {
   };
 
   return (
-    <div className="flex gap-3 items-center">
-      <div className="relative flex-1 max-w-sm">
+    <div className="flex items-center justify-start">
+      {/* <div className="relative flex-1 max-w-sm">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-100/40" />
         <input
           type="text"
@@ -48,7 +48,7 @@ export function OrdersFilterBar({ currentSearch, currentDate }: Props) {
           placeholder="جستجو شماره تلفن"
           className="w-full rounded-lg border border-amber-500/20 bg-black/20 py-2 pr-10 pl-3 text-sm text-amber-50 outline-none focus:border-amber-500/50"
         />
-      </div>
+      </div> */}
       {/* <div className="relative">
         <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-100/40" />
         <input
@@ -58,12 +58,12 @@ export function OrdersFilterBar({ currentSearch, currentDate }: Props) {
           className="rounded-lg border border-amber-500/20 bg-black/20 py-2 pr-10 pl-3 text-sm text-amber-50 outline-none focus:border-amber-500/50"
         />
       </div> */}
-      <button
+      {/* <button
         onClick={applyFilters}
         className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-black hover:bg-amber-400"
       >
         اعمال فیلتر
-      </button>
+      </button> */}
 
       {/* ✅ دکمه رفرش */}
       <button

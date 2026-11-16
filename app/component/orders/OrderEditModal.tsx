@@ -5,16 +5,7 @@ import { useState } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { updateOrder } from "@/app/lib/api";
-import {
-  Loader2,
-  Save,
-  Plus,
-  Trash2,
-  User,
-  CreditCard,
-  MapPin,
-  Calendar,
-} from "lucide-react";
+import { Loader2, Save, Plus, Trash2, User } from "lucide-react";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
@@ -45,6 +36,7 @@ export function OrderEditModal({
   onRefresh,
 }: Props) {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // تبدیل تاریخ میلادی به شمسی
   const initialTravelDate = order.travel_date
@@ -62,9 +54,7 @@ export function OrderEditModal({
     origin: order.origin || "",
     destination: order.destination || "",
     train_number: order.train_number || "",
-    salon: order.salon || "",
     phone: order.phone || "",
-    status: order.status || "waiting_start",
     coupe_type: order.coupe_type || "all",
     adult_number: order.adult_number || 1,
     baby_number: order.baby_number || 0,
@@ -118,13 +108,35 @@ export function OrderEditModal({
     setPassengers(passengers.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const gregorianTravelDate = travelDate
         ?.convert(gregorian)
         .format("YYYY-MM-DD");
+
+      if (!formData.phone || formData.phone.trim() === "") {
+        setError("شماره موبایل رزرو الزامی هست");
+        setIsLoading(false);
+        return;
+      }
+
+      // چک کردن تعداد مسافر
+      if (formData.adult_number + formData.baby_number > passengers.length) {
+        setError("تعداد افراد بیش تر از بلوک های مسافر هست ");
+        setIsLoading(false);
+        return;
+      }
+
+      // چک کردن تعداد مسافر
+      if (formData.adult_number + formData.baby_number < passengers.length) {
+        setError(
+          "تعداد بلوک های مسافر بیش تر از تعداد بزرگسال و تعداد خردسال است",
+        );
+        setIsLoading(false);
+        return;
+      }
 
       const payload: any = {
         ...formData,
@@ -172,6 +184,11 @@ export function OrderEditModal({
           ویرایش سفارش #{order.id}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-sm text-rose-300">
+              {error}
+            </div>
+          )}
           {/* بخش ۱: اطلاعات سفر */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -335,6 +352,7 @@ export function OrderEditModal({
               </label>
               <input
                 type="number"
+                min={0}
                 name="adult_number"
                 value={formData.adult_number}
                 onChange={handleChange}
@@ -346,6 +364,7 @@ export function OrderEditModal({
                 تعداد خردسال
               </label>
               <input
+                min={0}
                 type="number"
                 name="baby_number"
                 value={formData.baby_number}
@@ -359,6 +378,7 @@ export function OrderEditModal({
               </label>
               <input
                 name="train_number"
+                min={1}
                 value={formData.train_number}
                 onChange={handleChange}
                 className={inputClass}
@@ -370,6 +390,7 @@ export function OrderEditModal({
               </label>
               <input
                 type="number"
+                min={0}
                 name="from_price"
                 value={formData.from_price}
                 onChange={handleChange}
@@ -383,6 +404,7 @@ export function OrderEditModal({
               <input
                 type="number"
                 name="to_price"
+                min={1}
                 value={formData.to_price}
                 onChange={handleChange}
                 className={inputClass}
@@ -394,6 +416,8 @@ export function OrderEditModal({
               </label>
               <input
                 type="number"
+                min={0}
+                max={24}
                 name="departure_time_from"
                 value={formData.departure_time_from}
                 onChange={handleChange}
@@ -406,32 +430,14 @@ export function OrderEditModal({
               </label>
               <input
                 type="number"
+                min={0}
+                max={24}
                 name="departure_time_to"
                 value={formData.departure_time_to}
                 onChange={handleChange}
                 className={timeInputClass}
               />
             </div>
-          </div>
-
-          {/* بخش ۴: وضعیت */}
-          <div className="border-t border-amber-500/10 pt-4">
-            <label className="block text-xs text-amber-100/60 mb-1">
-              وضعیت
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className={inputClass}
-            >
-              <option value="waiting_start">در انتظار شروع</option>
-              <option value="pending">انتظار</option>
-              <option value="monitoring">در حال رصد</option>
-              <option value="redirect_gateway">هدایت به درگاه پرداخت</option>
-              <option value="failed">ناموفق</option>
-              <option value="captcha">حل کپچا</option>
-            </select>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t border-amber-500/10">

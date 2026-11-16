@@ -304,3 +304,20 @@ export const getOrderDetail = async (token: string, orderId: number) => {
   }
   return res.json();
 };
+
+export const startRobot = async (token: string, orderId: number) => {
+  const res = await fetch(`${baseUrl}/admin/order/${orderId}`, {
+    method: "PATCH",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status: "pending" }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "خطا در شروع ربات");
+  }
+  return res.json();
+};

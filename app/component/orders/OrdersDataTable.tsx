@@ -7,11 +7,12 @@ import { StatusBadge } from "../../component/ui/StatusBadge";
 import { Button } from "../../component/ui/Button";
 import type { Reservation } from "../../types/index.type";
 import { useState, useTransition } from "react";
-import { Edit, Loader2, Terminal, Trash2 } from "lucide-react";
+import { Edit, Loader2, Play, Terminal, Trash2 } from "lucide-react";
 import { ReservationLogsModal } from "./ReservationLogsModal";
 import { useRouter } from "next/navigation";
-import { deleteOrder, getOrderDetail } from "@/app/lib/api"; // getOrderDetail اضافه شد
+import { deleteOrder, getOrderDetail, startRobot } from "@/app/lib/api"; // getOrderDetail اضافه شد
 import { OrderEditModal } from "./OrderEditModal";
+import { convertIntoDate } from "@/app/utils/config";
 
 interface Props {
   reservations: Reservation[];
@@ -48,6 +49,29 @@ export function OrdersDataTable({
   const [isFetchingOrder, setIsFetchingOrder] = useState<number | null>(null); // برای نمایش لودینگ روی دکمه
 
   const router = useRouter();
+
+  const [startingId, setStartingId] = useState<number | null>(null); // برای لودینگ دکمه شروع
+
+  // تابع جدید برای شروع ربات
+  const handleStartRobot = async (orderId: number) => {
+    if (!window.confirm("آیا از شروع ربات برای این سفارش مطمئن هستید؟")) {
+      return;
+    }
+    
+    setStartingId(orderId);
+    try {
+      await startRobot(token, orderId);
+      // پس از موفقیت، صفحه را رفرش می‌کنیم تا وضعیت جدید نمایش داده شود
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "خطا در شروع ربات");
+    } finally {
+      setStartingId(null);
+    }
+  };
 
   // تابع جدید برای واکشی اطلاعات کامل سفارش قبل از باز کردن Modal
   const handleEditClick = async (orderId: number) => {
@@ -115,6 +139,7 @@ export function OrdersDataTable({
                 <th className="px-4 py-3 font-medium">وضعیت</th>
                 <th className="px-4 py-3 font-medium">حذف سفارش</th>
                 <th className="px-4 py-3 font-medium">ویرایش سفارش</th>
+                <th className="px-4 py-3 font-medium">شروع ربات</th>
                 <th className="px-4 py-3 font-medium">لاگ</th>
               </tr>
             </thead>
@@ -131,7 +156,9 @@ export function OrdersDataTable({
                     {r.origin} ← {r.destination}
                   </td>
                   <td className="px-4 py-4 text-amber-100/60" dir="ltr">
-                    {r.travel_date}
+                    {r.travel_date
+                      ? convertIntoDate(r.travel_date).format("YYYY/MM/DD")
+                      : "-"}
                   </td>
                   <td
                     className="px-4 py-4 font-mono text-amber-100/80"
@@ -170,6 +197,30 @@ export function OrdersDataTable({
                       ) : (
                         <Edit className="h-4 w-4" />
                       )}
+                    </button>
+                  </td>
+                  {/* دکمه شروع ربات */}
+                  <td className="px-4 py-4">
+                    <button
+                      onClick={() => handleStartRobot(r.id)}
+                      disabled={
+                        startingId === r.id ||
+                        r.status === "pending" ||
+                        r.status === "monitoring" ||
+                        r.status === "captcha" ||
+                        r.status === "redirect_gateway" ||
+                        r.status === "failed" ||
+                        r.status === "success"
+                      }
+                      className="flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-400 disabled:opacity-50 transition"
+                      title="شروع ربات"
+                    >
+                      {startingId === r.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                      شروع
                     </button>
                   </td>
                   {/* مشاهده لاگها */}

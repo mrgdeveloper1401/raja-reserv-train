@@ -29,7 +29,8 @@ export default function GlobalError({
 
         <h1 className="text-2xl font-bold text-amber-50">مشکلی پیش آمد</h1>
         <p className="mt-3 max-w-md text-sm leading-7 text-amber-100/50">
-          متأسفانه در پردازش درخواست شما خطایی رخ داده. می‌تونی دوباره تلاش کنی یا به خانه برگردی.
+          متأسفانه در پردازش درخواست شما خطایی رخ داده. می‌تونی دوباره تلاش کنی
+          یا به خانه برگردی.
         </p>
 
         {error.digest && (

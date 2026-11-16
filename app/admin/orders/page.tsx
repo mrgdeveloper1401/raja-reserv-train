@@ -51,7 +51,7 @@ export default async function AdminOrdersPage({
         </p>
       </div>
 
-      <OrdersTabs currentTab={currentTab} counts={{ all: data.items.length }} />
+      <OrdersTabs currentTab={currentTab} />
 
       <OrdersFilterBar
         currentSearch={currentSearch}

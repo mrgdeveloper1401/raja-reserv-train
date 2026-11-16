@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   const accessToken = result?.token?.access_token;
+  const refreshToken = result?.token.refresh_token;
 
   if (!accessToken) {
     return NextResponse.json(
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     path: "/",
     expires: new Date(result.token.access_token_expire_datetime),
   });
-  response.cookies.set("refresh_token", accessToken, {
+  response.cookies.set("refresh_token", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
