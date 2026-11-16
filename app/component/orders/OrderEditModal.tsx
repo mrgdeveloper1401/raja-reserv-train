@@ -124,14 +124,20 @@ export function OrderEditModal({
       }
 
       // چک کردن تعداد مسافر
-      if (formData.adult_number + formData.baby_number > passengers.length) {
+      if (
+        Number(formData.adult_number) + Number(formData.baby_number) >
+        passengers.length
+      ) {
         setError("تعداد افراد بیش تر از بلوک های مسافر هست ");
         setIsLoading(false);
         return;
       }
 
       // چک کردن تعداد مسافر
-      if (formData.adult_number + formData.baby_number < passengers.length) {
+      if (
+        Number(formData.adult_number) + Number(formData.baby_number) <
+        passengers.length
+      ) {
         setError(
           "تعداد بلوک های مسافر بیش تر از تعداد بزرگسال و تعداد خردسال است",
         );
