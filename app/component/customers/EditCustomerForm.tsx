@@ -3,23 +3,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  User,
-  CreditCard,
-  Phone,
-  Calendar,
-  Users,
-  Loader2,
-} from "lucide-react";
+import { User, CreditCard, Calendar, Loader2 } from "lucide-react";
 import { Card } from "../../component/ui/Card";
 import { Button } from "../../component/ui/Button";
 import { updatePassenger } from "../../lib/api";
 import type { PassengerDetail } from "../../types/index.type";
+import DatePicker, { DateObject } from "react-multi-date-picker";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
+import gregorian from "react-date-object/calendars/gregorian";
+import gregorian_en from "react-date-object/locales/gregorian_en";
 
 interface Props {
   token: string;
   initialData: PassengerDetail;
 }
+
+const inputClass =
+  "w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono";
 
 export function EditCustomerForm({ token, initialData }: Props) {
   const router = useRouter();
@@ -31,10 +32,35 @@ export function EditCustomerForm({ token, initialData }: Props) {
     first_name: initialData.first_name || "",
     last_name: initialData.last_name || "",
     national_id: initialData.national_id || "",
-    gender: initialData.gender || "male",
     birth_date: initialData.birth_date || "",
-    phone: initialData.phone || "",
   });
+  const birthDateValue = formData.birth_date
+    ? new DateObject({
+        date: formData.birth_date,
+        format: "YYYY-MM-DD",
+        calendar: gregorian,
+        locale: gregorian_en,
+      }).convert(persian, persian_fa)
+    : null;
+
+  const handlePassengerBirthDate = (date: DateObject | null) => {
+    if (!date || !date.isValid) {
+      setFormData((previous) => ({
+        ...previous,
+        birth_date: "",
+      }));
+      return;
+    }
+
+    const gregorianDate = new DateObject(date)
+      .convert(gregorian, gregorian_en)
+      .format("YYYY-MM-DD");
+
+    setFormData((previous) => ({
+      ...previous,
+      birth_date: gregorianDate,
+    }));
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -50,11 +76,6 @@ export function EditCustomerForm({ token, initialData }: Props) {
     // اعتبارسنجی سمت کلاینت
     if (formData.national_id.length !== 10) {
       setError("کد ملی باید دقیقاً ۱۰ رقم باشد.");
-      setIsLoading(false);
-      return;
-    }
-    if (!/^09\d{9}$/.test(formData.phone)) {
-      setError("شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.");
       setIsLoading(false);
       return;
     }
@@ -130,51 +151,23 @@ export function EditCustomerForm({ token, initialData }: Props) {
             />
           </div>
 
-          {/* جنسیت */}
-          <div>
-            <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
-              <Users className="h-3.5 w-3.5" /> جنسیت
-            </label>
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50"
-            >
-              <option value="male">مرد</option>
-              <option value="female">زن</option>
-            </select>
-          </div>
-
-          {/* شماره موبایل */}
-          <div>
-            <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
-              <Phone className="h-3.5 w-3.5" /> شماره موبایل
-            </label>
-            <input
-              required
-              name="phone"
-              dir="ltr"
-              placeholder="09..."
-              maxLength={11}
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
-            />
-          </div>
-
           {/* تاریخ تولد */}
           <div>
             <label className="mb-1.5 flex items-center gap-1.5 text-xs text-amber-100/60">
               <Calendar className="h-3.5 w-3.5" /> تاریخ تولد (اختیاری)
             </label>
-            <input
+            <DatePicker
               name="birth_date"
-              type="date"
-              dir="ltr"
-              value={formData.birth_date}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2.5 text-sm text-amber-50 outline-none focus:border-amber-500/50 font-mono"
+              placeholder="تاریخ تولد را انتخاب کنید"
+              portal
+              calendar={persian}
+              locale={persian_fa}
+              format="YYYY/MM/DD"
+              value={birthDateValue}
+              onChange={handlePassengerBirthDate}
+              inputClass={inputClass}
+              containerClassName="w-full"
+              disabled={isLoading}
             />
           </div>
         </div>

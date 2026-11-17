@@ -205,6 +205,7 @@ export interface PassengerListItem {
   full_name: string;
   orders_count: number;
   last_order_date: string | null;
+  national_id?: string
 }
 
 export interface PaginatedPassengers {
@@ -219,7 +220,6 @@ export interface CreatePassengerPayload {
   last_name: string;
   national_id: string;
   birth_date?: string | null;
-  phone: string;
 }
 
 export interface PassengerOrder {

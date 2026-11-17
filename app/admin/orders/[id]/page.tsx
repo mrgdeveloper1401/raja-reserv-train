@@ -16,6 +16,7 @@ import { OrderPassengers } from "../../../component/orders/OrderPassengers";
 import { OrderActions } from "../../..//component/orders/OrderActions";
 import { mockOrders, mockPassengers } from "../../../lib/mock-data";
 import { TRAIN_TYPE_LABEL } from "../../../types/index.type";
+import { convertIntoDate } from "@/app/utils/config";
 
 export default async function OrderDetailPage({
   params,
@@ -27,7 +28,7 @@ export default async function OrderDetailPage({
   if (!order) notFound();
 
   const passengers = mockPassengers.filter((p) =>
-    order.passengerIds.includes(p.id)
+    order.passengerIds.includes(p.id),
   );
 
   return (
@@ -66,7 +67,12 @@ export default async function OrderDetailPage({
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <InfoItem icon={MapPin} label="مبدا" value={order.from} />
           <InfoItem icon={MapPin} label="مقصد" value={order.to} />
-          <InfoItem icon={Calendar} label="تاریخ حرکت" value={order.date} mono />
+          <InfoItem
+            icon={Calendar}
+            label="تاریخ حرکت"
+            value={convertIntoDate(order.date).format("YYYY/MM/DD")}
+            mono
+          />
           <InfoItem
             icon={Train}
             label="شماره قطار"
@@ -97,13 +103,17 @@ export default async function OrderDetailPage({
 
           {/* اطلاعات تکمیلی */}
           <Card>
-            <h2 className="mb-4 text-base font-bold text-amber-50">اطلاعات تکمیلی</h2>
+            <h2 className="mb-4 text-base font-bold text-amber-50">
+              اطلاعات تکمیلی
+            </h2>
             <div className="space-y-3 text-sm">
               <Row label="شناسه" value={order.id} mono />
               <Row label="شناسه مشتری" value={order.userId} mono />
               <Row
                 label="نوع قطار"
-                value={order.trainTypes.map((t) => TRAIN_TYPE_LABEL[t]).join("، ")}
+                value={order.trainTypes
+                  .map((t) => TRAIN_TYPE_LABEL[t])
+                  .join("، ")}
               />
               <Row
                 label="بازه زمانی"

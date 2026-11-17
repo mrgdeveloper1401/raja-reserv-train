@@ -54,7 +54,7 @@ const features = [
 
 export default async function HomePage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = cookieStore.get("access_token")?.value;
 
   return (
     <main className="bg-[#0f0d0a]">
@@ -92,7 +92,14 @@ export default async function HomePage() {
               href="/login"
               className="group flex items-center gap-2 rounded-xl bg-gradient-to-l from-amber-400 to-orange-500 px-7 py-3.5 font-bold text-[#0f0d0a] shadow-lg shadow-amber-500/25 transition hover:shadow-amber-500/40 hover:brightness-110 active:scale-[0.98]"
             >
-              {token ? "داشبورد" : "شروع کن"}
+              ورود مجدد
+              <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" />
+            </Link>
+            <Link
+              href="/admin"
+              className="group flex items-center gap-2 rounded-xl bg-gradient-to-l from-amber-400 to-orange-500 px-7 py-3.5 font-bold text-[#0f0d0a] shadow-lg shadow-amber-500/25 transition hover:shadow-amber-500/40 hover:brightness-110 active:scale-[0.98]"
+            >
+              پنل ادمین
               <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" />
             </Link>
             <Link

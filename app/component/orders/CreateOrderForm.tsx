@@ -32,6 +32,8 @@ import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
 import { toEnglishDigits } from "@/app/utils/config";
 import { StationCombobox } from "../ui/StationCombobox";
+import gregorian_en from "react-date-object/locales/gregorian_en";
+import { PassengerPicker, SelectedPassenger } from "./PassengerPicker";
 
 interface Props {
   token: string;
@@ -45,7 +47,6 @@ interface PassengerFormData {
   last_name: string;
   national_id: string;
   birth_date: string;
-  gender?: string;
 }
 
 export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
@@ -80,6 +81,48 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
     baby_number: 0,
     phone: "",
   });
+
+  const handleSelectExistingPassenger = (selected: SelectedPassenger) => {
+    const nationalId = toEnglishDigits(selected.national_id).trim();
+
+    const isDuplicate = passengers.some(
+      (passenger) =>
+        toEnglishDigits(passenger.national_id).trim() === nationalId,
+    );
+
+    if (isDuplicate) {
+      setError("این مسافر قبلاً به فرم اضافه شده است.");
+      return;
+    }
+
+    const newPassenger: PassengerFormData = {
+      first_name: selected.first_name,
+      last_name: selected.last_name,
+      national_id: nationalId,
+      birth_date: selected.birth_date || "",
+    };
+
+    setError("");
+
+    setPassengers((previous) => {
+      // اگر بلوک کاملاً خالی وجود دارد، همان را پر می‌کنیم.
+      const emptyIndex = previous.findIndex(
+        (passenger) =>
+          !passenger.first_name.trim() &&
+          !passenger.last_name.trim() &&
+          !passenger.national_id.trim() &&
+          !passenger.birth_date,
+      );
+
+      if (emptyIndex === -1) {
+        return [...previous, newPassenger];
+      }
+
+      return previous.map((passenger, index) =>
+        index === emptyIndex ? newPassenger : passenger,
+      );
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -250,6 +293,11 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
           </Button>
         </div>
 
+        <PassengerPicker
+          onSelect={handleSelectExistingPassenger}
+          disabled={isLoading}
+        />
+
         <div className="space-y-6">
           {passengers.map((passenger, index) => (
             <div
@@ -321,12 +369,24 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
                     <Calendar className="h-3.5 w-3.5" /> تاریخ تولد
                   </label>
                   <DatePicker
-                    placeholder="برای نمایش کلیک کنید"
+                    placeholder="تاریخ تولد را انتخاب کنید"
+                    value={
+                      passenger.birth_date
+                        ? new DateObject({
+                            date: passenger.birth_date,
+                            format: "YYYY-MM-DD",
+                            calendar: gregorian,
+                            locale: gregorian_en,
+                          }).convert(persian, persian_fa)
+                        : null
+                    }
                     onChange={(date) => handlePassengerBirthDate(index, date)}
                     calendar={persian}
                     locale={persian_fa}
+                    format="YYYY/MM/DD"
                     required
                     portal
+                    containerClassName="w-full"
                     inputClass={`${inputClass} font-mono`}
                   />
                 </div>

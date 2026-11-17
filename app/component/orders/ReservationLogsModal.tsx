@@ -80,7 +80,7 @@ export function ReservationLogsModal({ reservationId, token, onClose }: Props) {
         {/* بدنه لاگ‌ها */}
         <div
           ref={logContainerRef}
-          className="h-[400px] overflow-y-auto bg-black p-4 font-mono text-xs text-emerald-300"
+          className="h-[600px] overflow-y-auto bg-black p-4 font-mono text-xs text-emerald-300"
           dir="ltr"
         >
           {logs.map((log, index) => (

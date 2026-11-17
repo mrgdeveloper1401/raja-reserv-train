@@ -2,18 +2,11 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowRight,
-  User,
-  Phone,
-  CreditCard,
-  Calendar,
-  MapPin,
-} from "lucide-react";
+import { ArrowRight, CreditCard, Calendar, MapPin } from "lucide-react";
 import { Card } from "../../../component/ui/Card";
 import { CustomerActions } from "../../../component/customers/CustomerActions";
 import { getPassengerDetail } from "../../../lib/api";
-import { StatusBadge } from "../../../component/ui/StatusBadge"; // اگر برای نوع بلیط نیاز داشتی
+import { convertIntoDate } from "@/app/utils/config";
 
 export default async function CustomerDetailPage({
   params,
@@ -69,20 +62,13 @@ export default async function CustomerDetailPage({
               ltr
             />
             <InfoRow
-              icon={Phone}
-              label="شماره تماس"
-              value={passenger.phone}
-              ltr
-            />
-            <InfoRow
-              icon={User}
-              label="جنسیت"
-              value={passenger.gender === "male" ? "مرد" : "زن"}
-            />
-            <InfoRow
               icon={Calendar}
               label="تاریخ تولد"
-              value={passenger.birth_date || "ثبت نشده"}
+              value={
+                passenger.birth_date
+                  ? convertIntoDate(passenger.birth_date).format("YYYY/MM/DD")
+                  : "ثبت نشده"
+              }
               ltr
             />
           </div>
@@ -124,7 +110,7 @@ export default async function CustomerDetailPage({
                       className="px-5 py-4 text-amber-100/60 font-mono"
                       dir="ltr"
                     >
-                      {o.travel_date}
+                      {convertIntoDate(o.travel_date).format("YYYY/MM/DD")}
                     </td>
                     <td className="px-5 py-4 text-amber-100/60">
                       {o.passenger_type === "male"

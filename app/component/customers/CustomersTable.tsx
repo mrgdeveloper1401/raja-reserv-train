@@ -4,10 +4,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, User, Phone, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Search, User, ShoppingBag, ArrowLeft } from "lucide-react";
 import { Card } from "../../component/ui/Card";
 import { Button } from "../../component/ui/Button";
 import type { PassengerListItem } from "../../types/index.type";
+import { convertIntoDate } from "@/app/utils/config";
 
 interface Props {
   passengers: PassengerListItem[];
@@ -67,6 +68,7 @@ export function CustomersTable({
           <thead>
             <tr className="border-b border-amber-500/10 bg-[#0f0d0a]/60 text-right text-xs text-amber-100/40">
               <th className="px-5 py-3 font-medium">مشتری</th>
+              <th className="px-5 py-3 font-medium">کد ملی</th>
               <th className="px-5 py-3 font-medium">تعداد سفارش</th>
               <th className="px-5 py-3 font-medium">آخرین سفارش</th>
               <th className="px-5 py-3 font-medium"></th>
@@ -89,13 +91,20 @@ export function CustomersTable({
                   </div>
                 </td>
                 <td className="px-5 py-4">
+                    <span className="font-medium text-amber-50">
+                      {c.national_id}
+                    </span>
+                </td>
+                <td className="px-5 py-4">
                   <span className="flex items-center gap-1.5 text-amber-100/70">
                     <ShoppingBag className="h-3.5 w-3.5 text-amber-400/60" />
                     {c.orders_count} سفارش
                   </span>
                 </td>
                 <td className="px-5 py-4 font-mono text-amber-100/60" dir="ltr">
-                  {c.last_order_date || "—"}
+                  {c.last_order_date
+                    ? convertIntoDate(c.last_order_date).format("YYYY/MM/DD")
+                    : "-"}
                 </td>
                 <td className="px-5 py-4">
                   <Link
