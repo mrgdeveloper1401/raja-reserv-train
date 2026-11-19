@@ -10,7 +10,7 @@ import { useState, useTransition } from "react";
 import { Edit, Loader2, Play, Terminal, Trash2 } from "lucide-react";
 import { ReservationLogsModal } from "./ReservationLogsModal";
 import { useRouter } from "next/navigation";
-import { deleteOrder, getOrderDetail, startRobot } from "@/app/lib/api"; // getOrderDetail اضافه شد
+import { deleteOrder, getOrderDetail, startRobot } from "@/app/lib/api";
 import { OrderEditModal } from "./OrderEditModal";
 import { convertIntoDate } from "@/app/utils/config";
 
@@ -56,7 +56,7 @@ export function OrdersDataTable({
     if (!window.confirm("آیا از شروع ربات برای این سفارش مطمئن هستید؟")) {
       return;
     }
-    
+
     setStartingId(orderId);
     try {
       await startRobot(token, orderId);
@@ -163,7 +163,7 @@ export function OrdersDataTable({
                     className="px-4 py-4 font-mono text-amber-100/80"
                     dir="ltr"
                   >
-                    {r.train_number ?? "-"}
+                    {r.train_number?.length ? r.train_number.join(", ") : "-"}
                   </td>
                   <td className="px-4 py-4">
                     <StatusBadge status={r.status} />
@@ -186,10 +186,18 @@ export function OrdersDataTable({
                   <td className="px-4 py-4">
                     {/* دکمه ویرایش: حالا دیتا را فچ می‌کند */}
                     <button
+                      type="button"
                       onClick={() => handleEditClick(r.id)}
-                      disabled={isFetchingOrder === r.id}
-                      className="text-amber-400 hover:text-amber-300 disabled:opacity-50"
-                      title="ویرایش"
+                      disabled={
+                        isFetchingOrder === r.id || r.status !== "waiting_start"
+                      }
+                      className="text-amber-400 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
+                      title={
+                        currentTab === "active"
+                          ? "ویرایش سفارش"
+                          : "ویرایش فقط در تب فعال امکان‌پذیر است"
+                      }
+                      aria-label="ویرایش سفارش"
                     >
                       {isFetchingOrder === r.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -330,8 +338,8 @@ export function OrdersDataTable({
       )}
 
       {/* ✅ مودال ویرایش */}
-      
-      {editingOrder && (      
+
+      {editingOrder && (
         <OrderEditModal
           order={editingOrder}
           token={token}

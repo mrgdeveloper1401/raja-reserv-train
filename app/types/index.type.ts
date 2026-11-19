@@ -106,7 +106,7 @@ export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
 export interface Reservation {
   id: number;
   order_id: number;
-  train_number: number;
+  train_number: string[];
   origin: string;
   destination: string;
   travel_date: string; // YYYY-MM-DD
@@ -275,7 +275,7 @@ export interface Restitution {
   id: number;
   serial_number: string;
   phone: string;
-  train_number: string;
+  train_number: string[];
   hall_number: string;
   status: "success" | "failed" | "pending";
   created_at: string;
@@ -302,11 +302,10 @@ export interface EditOrderType {
   raja_account_id?: number | null;
   coupe_type?: "all" | "four" | "four_five" | "three" | "five" | "salon" | null;
   is_exclusive?: boolean;
-  departure_time_from?: number | null;
-  departure_time_to?: number | null;
+  departure_time_slots?: number[] | null;
   from_price?: number | null;
   to_price?: number | null;
-  train_number?: number | null;
+  train_number?: string[] | null;
   phone: string;
   adult_number: number;
   baby_number: number;

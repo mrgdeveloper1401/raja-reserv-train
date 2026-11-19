@@ -29,6 +29,14 @@ interface Props {
   onRefresh: () => void;
 }
 
+const DEPARTURE_TIME_SLOTS = [
+  { value: 0, label: "۰۰:۰۰ تا ۰۶:۰۰" },
+  { value: 6, label: "۰۶:۰۰ تا ۱۲:۰۰" },
+  { value: 12, label: "۱۲:۰۰ تا ۱۸:۰۰" },
+  { value: 18, label: "۱۸:۰۰ تا ۲۱:۰۰" },
+  { value: 21, label: "۲۱:۰۰ تا ۲۴:۰۰" },
+] as const;
+
 export function OrderEditModal({
   order,
   token,
@@ -38,6 +46,14 @@ export function OrderEditModal({
 }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const initialDepartureTimeSlots = order.departure_time_slots ?? [];
+  const [departureTimeSlots, setDepartureTimeSlots] = useState<number[]>(() => [
+    ...new Set(initialDepartureTimeSlots),
+  ]);
+  const initialSlots = new Set(initialDepartureTimeSlots);
+  const slotsChanged =
+    departureTimeSlots.length !== initialSlots.size ||
+    departureTimeSlots.some((slot) => !initialSlots.has(slot));
 
   // تبدیل تاریخ میلادی به شمسی
   const initialTravelDate = order.travel_date
@@ -50,19 +66,25 @@ export function OrderEditModal({
     initialTravelDate,
   );
 
+  const handleDepartureTimeSlotChange = (slot: number, checked: boolean) => {
+    setDepartureTimeSlots((previous) =>
+      checked
+        ? [...new Set([...previous, slot])]
+        : previous.filter((value) => value !== slot),
+    );
+  };
+
   // استیت فرم اصلی
   const [formData, setFormData] = useState({
     origin: order.origin || "",
     destination: order.destination || "",
-    train_number: order.train_number || "",
+    train_number: order.train_number?.join(",") ?? "",
     phone: order.phone || "",
     coupe_type: order.coupe_type || "all",
     adult_number: order.adult_number || 1,
     baby_number: order.baby_number || 0,
     from_price: order.from_price || "",
     to_price: order.to_price || "",
-    departure_time_from: order.departure_time_from || "",
-    departure_time_to: order.departure_time_to || "",
   });
 
   // استیت مسافران (مقداردهی اولیه از order.passengers)
@@ -145,6 +167,19 @@ export function OrderEditModal({
         return;
       }
 
+      const trainNumbers = [
+        ...new Set(
+          toEnglishDigits(formData.train_number)
+            .split(/[,،\s]+/)
+            .filter(Boolean),
+        ),
+      ];
+
+      if (trainNumbers.some((value) => !/^[0-9]{1,10}$/.test(value))) {
+        setError("هر شماره قطار باید بین ۱ تا ۱۰ رقم باشد.");
+        return; // finally لودینگ رو خاموش می‌کنه
+      }
+
       const payload: EditOrderType = {
         ...formData,
         travel_date: gregorianTravelDate
@@ -154,13 +189,16 @@ export function OrderEditModal({
         to_price: formData.to_price ? Number(formData.to_price) : null,
         adult_number: Number(formData.adult_number),
         baby_number: Number(formData.baby_number),
-        departure_time_from: formData.departure_time_from
-          ? Number(formData.departure_time_from)
-          : null,
-        departure_time_to: formData.departure_time_to
-          ? Number(formData.departure_time_to)
-          : null,
+        ...(slotsChanged
+          ? {
+              departure_time_slots: [...departureTimeSlots].sort(
+                (a, b) => a - b,
+              ),
+            }
+          : {}),
+
         passengers: passengers, // <--- ارسال لیست مسافران
+        train_number: trainNumbers,
       };
 
       // حذف فیلدهای خالی
@@ -169,6 +207,7 @@ export function OrderEditModal({
           delete payload[key];
         }
       });
+      console.log(payload);
 
       await updateOrder(token, order.id, payload);
       onRefresh();
@@ -384,7 +423,8 @@ export function OrderEditModal({
               </label>
               <input
                 name="train_number"
-                min={1}
+                dir="ltr"
+                type="text"
                 value={formData.train_number}
                 onChange={handleChange}
                 className={inputClass}
@@ -416,34 +456,39 @@ export function OrderEditModal({
                 className={inputClass}
               />
             </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                زمان حرکت از
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={24}
-                name="departure_time_from"
-                value={formData.departure_time_from}
-                onChange={handleChange}
-                className={timeInputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                زمان حرکت تا
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={24}
-                name="departure_time_to"
-                value={formData.departure_time_to}
-                onChange={handleChange}
-                className={timeInputClass}
-              />
-            </div>
+            <fieldset className="border-t border-amber-500/10 pt-3">
+              <legend className="px-1 text-sm font-semibold text-amber-400">
+                زمان حرکت قطار رفت
+              </legend>
+
+              <p className="mb-3 text-xs text-amber-100/60">
+                می‌توانید چند بازه انتخاب کنید. بدون انتخاب، محدودیت ساعت حرکت
+                ندارید.
+              </p>
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {DEPARTURE_TIME_SLOTS.map(({ value, label }) => (
+                  <label
+                    key={value}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-500/10 bg-[#0f0d0a] p-2.5 text-sm text-amber-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={departureTimeSlots.includes(value)}
+                      onChange={(e) =>
+                        handleDepartureTimeSlotChange(
+                          value,
+                          e.currentTarget.checked,
+                        )
+                      }
+                      disabled={isLoading}
+                      className="h-4 w-4 accent-amber-500"
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t border-amber-500/10">

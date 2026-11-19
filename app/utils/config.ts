@@ -45,3 +45,9 @@ export const convertIntoDate = (d: string) => {
   // ۲. سپس آن را به تقویم شمسی تبدیل می‌کنیم
   return date.convert(persian, persian_fa);
 };
+
+export function formatTomanFa(value: string) {
+  const digits = toEnglishDigits(value).replace(/\D/g, "");
+  if (!digits) return "";
+  return Number(digits).toLocaleString("fa-IR");
+}

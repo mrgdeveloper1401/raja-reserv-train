@@ -30,10 +30,11 @@ import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
-import { toEnglishDigits } from "@/app/utils/config";
+import { formatTomanFa, toEnglishDigits } from "@/app/utils/config";
 import { StationCombobox } from "../ui/StationCombobox";
 import gregorian_en from "react-date-object/locales/gregorian_en";
 import { PassengerPicker, SelectedPassenger } from "./PassengerPicker";
+import { number } from "zod";
 
 interface Props {
   token: string;
@@ -49,6 +50,16 @@ interface PassengerFormData {
   birth_date: string;
 }
 
+const DEPARTURE_TIME_SLOTS = [
+  { value: 0, label: "۰۰:۰۰ تا ۰۶:۰۰" },
+  { value: 6, label: "۰۶:۰۰ تا ۱۲:۰۰" },
+  { value: 12, label: "۱۲:۰۰ تا ۱۸:۰۰" },
+  { value: 18, label: "۱۸:۰۰ تا ۲۱:۰۰" },
+  { value: 21, label: "۲۱:۰۰ تا ۲۴:۰۰" },
+] as const;
+
+type DepartureTimeSlot = (typeof DEPARTURE_TIME_SLOTS)[number]["value"];
+
 export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +71,9 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
   const [passengers, setPassengers] = useState<PassengerFormData[]>([
     { first_name: "", last_name: "", national_id: "", birth_date: "" },
   ]);
+  const [departureTimeSlots, setDepartureTimeSlots] = useState<
+    DepartureTimeSlot[]
+  >([]);
 
   const [formData, setFormData] = useState({
     origin: "",
@@ -69,8 +83,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
     raja_account_id: rajaAccounts[0]?.id || "",
 
     is_exclusive: false,
-    departure_time_from: "",
-    departure_time_to: "",
+    departure_time_slots: "",
     from_price: "",
     to_price: "",
     train_number: "",
@@ -81,6 +94,17 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
     baby_number: 0,
     phone: "",
   });
+
+  const handleDepartureTimeSlotChange = (
+    slot: DepartureTimeSlot,
+    checked: boolean,
+  ) => {
+    setDepartureTimeSlots((previous) =>
+      checked
+        ? [...new Set([...previous, slot])].sort((a, b) => a - b)
+        : previous.filter((value) => value !== slot),
+    );
+  };
 
   const handleSelectExistingPassenger = (selected: SelectedPassenger) => {
     const nationalId = toEnglishDigits(selected.national_id).trim();
@@ -215,6 +239,19 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
       return;
     }
 
+    const trainNumbers = [
+      ...new Set(
+        toEnglishDigits(formData.train_number)
+          .split(/[,،\s]+/)
+          .filter(Boolean),
+      ),
+    ];
+
+    if (trainNumbers.some((number) => !/^[0-9]{1,10}$/.test(number))) {
+      setError("هر شماره قطار باید بین ۱ تا ۱۰ رقم باشد.");
+      return;
+    }
+
     try {
       const gregorianTravelDate = travelDate
         ?.convert(gregorian)
@@ -235,15 +272,10 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
             : null,
         raja_account_id: Number(formData.raja_account_id),
         is_exclusive: Boolean(formData.is_exclusive),
-        departure_time_from: formData.departure_time_from
-          ? Number(formData.departure_time_from)
-          : 0,
-        departure_time_to: formData.departure_time_to
-          ? Number(formData.departure_time_to)
-          : 24,
+        departure_time_slots: departureTimeSlots,
         from_price: formData.from_price ? Number(formData.from_price) : null,
         to_price: formData.to_price ? Number(formData.to_price) : null,
-        train_number: formData.train_number || null,
+        train_number: trainNumbers,
         coupe_type: formData.coupe_type === "all" ? null : formData.coupe_type,
 
         // --- این سه فیلد اضافه شدند ---
@@ -567,11 +599,18 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
               <DollarSign className="h-3.5 w-3.5" /> حداقل قیمت (هزار تومان)
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               name="from_price"
-              value={formData.from_price}
-              onChange={handleChange}
-              placeholder="مثلاً 1500"
+              value={formatTomanFa(formData.from_price)}
+              onChange={(e) => {
+                const digits = toEnglishDigits(e.target.value).replace(
+                  /\D/g,
+                  "",
+                );
+                setFormData({ ...formData, from_price: digits });
+              }}
+              placeholder="مثلاً ۱٬۵۰۰٬۰۰۰"
               className={`${inputClass} font-mono`}
               dir="ltr"
             />
@@ -581,11 +620,18 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
               <DollarSign className="h-3.5 w-3.5" /> حداکثر قیمت (هزار تومان)
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               name="to_price"
-              value={formData.to_price}
-              onChange={handleChange}
-              placeholder="مثلاً 2500"
+              value={formatTomanFa(formData.to_price)}
+              onChange={(e) => {
+                const digits = toEnglishDigits(e.target.value).replace(
+                  /\D/g,
+                  "",
+                );
+                setFormData({ ...formData, to_price: digits });
+              }}
+              placeholder="مثلاً ۲٬۵۰۰٬۰۰۰"
               className={`${inputClass} font-mono`}
               dir="ltr"
             />
@@ -599,7 +645,7 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
               name="train_number"
               value={formData.train_number}
               onChange={handleChange}
-              placeholder="مثلاً 196"
+              placeholder="مثلاً 196, 368, 412"
               className={`${inputClass} font-mono`}
               dir="ltr"
             />
@@ -641,44 +687,42 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
         </div>
 
         {/* فیلترهای زمانی */}
-        <div className="border-t border-amber-500/10 pt-5 mb-5 space-y-5">
-          <h3 className="text-sm font-semibold text-amber-400 flex items-center gap-2">
-            <Clock className="h-4 w-4" /> فیلترهای زمانی (اختیاری)
-          </h3>
-          <div>
-            <label className="mb-2 block text-xs text-amber-100/60">
-              زمان حرکت (قطار رفت)
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-[10px] text-amber-100/40 mb-1 block">
-                  از ساعت
-                </span>
+        <fieldset className="mb-5 border-t border-amber-500/10 pt-4">
+          <legend className="px-1 text-sm font-semibold text-amber-400">
+            <span className="inline-flex items-center gap-2">
+              <Clock className="h-4 w-4" aria-hidden="true" />
+              زمان حرکت قطار رفت
+            </span>
+          </legend>
+
+          <p className="mb-3 text-xs text-amber-100/60">
+            می‌توانید چند بازه انتخاب کنید. بدون انتخاب، همهٔ ساعت‌ها مجازند.
+          </p>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {DEPARTURE_TIME_SLOTS.map(({ value, label }) => (
+              <label
+                key={value}
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-500/10 bg-[#0f0d0a] p-3 text-sm text-amber-50"
+              >
                 <input
-                  type="number"
-                  name="departure_time_from"
-                  value={formData.departure_time_from}
-                  onChange={handleChange}
-                  className={timeInputClass}
-                  dir="ltr"
+                  type="checkbox"
+                  name="departure_time_slots"
+                  value={value}
+                  checked={departureTimeSlots.includes(value)}
+                  onChange={(e) =>
+                    handleDepartureTimeSlotChange(
+                      value,
+                      e.currentTarget.checked,
+                    )
+                  }
+                  className="h-4 w-4 accent-amber-500"
                 />
-              </div>
-              <div>
-                <span className="text-[10px] text-amber-100/40 mb-1 block">
-                  تا ساعت
-                </span>
-                <input
-                  type="number"
-                  name="departure_time_to"
-                  value={formData.departure_time_to}
-                  onChange={handleChange}
-                  className={timeInputClass}
-                  dir="ltr"
-                />
-              </div>
-            </div>
+                <span>{label}</span>
+              </label>
+            ))}
           </div>
-        </div>
+        </fieldset>
 
         <div className="border-t border-amber-500/10 pt-4">
           <label className="mb-1.5 block text-xs text-amber-100/60">
