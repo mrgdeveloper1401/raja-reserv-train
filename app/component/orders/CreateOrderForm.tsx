@@ -525,7 +525,6 @@ export function CreateOrderForm({ token, rajaAccounts, stations }: Props) {
             >
               <option value="all">همه انواع</option>
               <option value="four_four">4 تخته 4 ستاره</option>
-              <option value="four_five">4 تخته 5 ستاره</option>
               <option value="three">سه ستاره</option>
               <option value="five">5 ستاره</option>
               <option value="salon">سالنی</option>
