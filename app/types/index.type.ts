@@ -107,6 +107,7 @@ export interface Reservation {
   id: number;
   order_id: number;
   train_number: string[];
+  coupe_type: string;
   origin: string;
   destination: string;
   travel_date: string; // YYYY-MM-DD

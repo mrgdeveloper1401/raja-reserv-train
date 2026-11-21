@@ -26,6 +26,13 @@ interface Props {
   stations: { Name: string }[];
 }
 
+const coupeTypeLabels: Partial<Record<string, string>> = {
+  salon: "سالنی",
+  four_four: "چهار ستاره چهار تخته",
+  five: "پنج ستاره",
+  three: "سه ستاره", // این کد هم در تصویر دیده می‌شود
+};
+
 export function OrdersDataTable({
   reservations,
   total,
@@ -135,6 +142,7 @@ export function OrdersDataTable({
                 <th className="px-4 py-3 font-medium">مسیر</th>
                 <th className="px-4 py-3 font-medium">تاریخ سفر</th>
                 <th className="px-4 py-3 font-medium">شماره قطار</th>
+                <th className="px-4 py-3 font-medium">نوع کوپه</th>
                 <th className="px-4 py-3 font-medium">وضعیت</th>
                 <th className="px-4 py-3 font-medium">حذف سفارش</th>
                 <th className="px-4 py-3 font-medium">ویرایش سفارش</th>
@@ -164,6 +172,9 @@ export function OrdersDataTable({
                     dir="ltr"
                   >
                     {r.train_number?.length ? r.train_number.join(", ") : "-"}
+                  </td>
+                  <td className="px-4 py-4 font-mono text-amber-100/80">
+                    {r.coupe_type ? coupeTypeLabels[r.coupe_type] : "-"}
                   </td>
                   <td className="px-4 py-4">
                     <StatusBadge status={r.status} />
