@@ -10,7 +10,7 @@ import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
-import { toEnglishDigits } from "@/app/utils/config";
+import { formatTomanFa, toEnglishDigits } from "@/app/utils/config";
 import { StationCombobox } from "../ui/StationCombobox";
 import { EditOrderType, Passenger } from "@/app/types/index.type";
 
@@ -27,6 +27,10 @@ interface Props {
   stations: { Name: string }[]; // <--- اضافه شد
   onClose: () => void;
   onRefresh: () => void;
+}
+
+function normalizePriceForInput(value: string | number | null | undefined) {
+  return String(value ?? "").replace(/\.0+$/, "");
 }
 
 const DEPARTURE_TIME_SLOTS = [
@@ -83,8 +87,8 @@ export function OrderEditModal({
     coupe_type: order.coupe_type || "all",
     adult_number: order.adult_number || 1,
     baby_number: order.baby_number || 0,
-    from_price: order.from_price || "",
-    to_price: order.to_price || "",
+    from_price: normalizePriceForInput(order.from_price),
+    to_price: normalizePriceForInput(order.to_price),
   });
 
   // استیت مسافران (مقداردهی اولیه از order.passengers)
@@ -221,7 +225,6 @@ export function OrderEditModal({
 
   const inputClass =
     "w-full rounded-lg border border-amber-500/20 bg-[#0f0d0a] p-2 text-sm text-amber-50";
-  const timeInputClass = `${inputClass} font-mono text-center`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -435,11 +438,16 @@ export function OrderEditModal({
                 حداقل قیمت
               </label>
               <input
-                type="number"
-                min={0}
+                type="text"
                 name="from_price"
-                value={formData.from_price}
-                onChange={handleChange}
+                value={formatTomanFa(String(formData.from_price))}
+                onChange={(e) => {
+                  const digit = toEnglishDigits(e.target.value).replace(
+                    /\D/g,
+                    "",
+                  );
+                  setFormData({ ...formData, from_price: digit });
+                }}
                 className={inputClass}
               />
             </div>
@@ -448,11 +456,16 @@ export function OrderEditModal({
                 حداکثر قیمت
               </label>
               <input
-                type="number"
+                type="text"
                 name="to_price"
-                min={1}
-                value={formData.to_price}
-                onChange={handleChange}
+                value={formatTomanFa(String(formData.to_price))}
+                onChange={(e) => {
+                  const digits = toEnglishDigits(e.target.value).replace(
+                    /\D/g,
+                    "",
+                  );
+                  setFormData((prev) => ({ ...prev, to_price: digits }));
+                }}
                 className={inputClass}
               />
             </div>

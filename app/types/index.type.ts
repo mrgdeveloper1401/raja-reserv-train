@@ -304,7 +304,7 @@ export interface EditOrderType {
   coupe_type?: "all" | "four" | "four_five" | "three" | "five" | "salon" | null;
   is_exclusive?: boolean;
   departure_time_slots?: number[] | null;
-  from_price?: number | null;
+  from_price?: string | number | null;
   to_price?: number | null;
   train_number?: string[] | null;
   phone: string;

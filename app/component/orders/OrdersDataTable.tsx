@@ -28,7 +28,7 @@ interface Props {
 
 const coupeTypeLabels: Partial<Record<string, string>> = {
   salon: "سالنی",
-  four_four: "چهار ستاره چهار تخته",
+  four: "چهار ستاره چهار تخته",
   five: "پنج ستاره",
   three: "سه ستاره", // این کد هم در تصویر دیده می‌شود
 };
