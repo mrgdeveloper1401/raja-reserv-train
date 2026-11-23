@@ -81,6 +81,7 @@ export type ReservationStatus =
   | "redirect_gateway"
   | "success"
   | "captcha"
+  | "match_train"
   | "failed";
 
 export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
@@ -91,11 +92,13 @@ export const RESERVATION_STATUS_LABEL: Record<ReservationStatus, string> = {
   success: "موفق",
   failed: "ناموفق",
   captcha: "کپچا",
+  match_train: "قطار یافت شده"
 };
 
 export const RESERVATION_STATUS_COLOR: Record<ReservationStatus, string> = {
   pending: "text-amber-300 bg-amber-500/10 border-amber-500/30",
   monitoring: "text-blue-300 bg-blue-500/10 border-blue-500/30",
+  match_train: "text-blue-300 bg-blue-500/10 border-blue-500/30",
   waiting_start: "text-violet-300 bg-violet-500/10 border-violet-500/30",
   redirect_gateway: "text-cyan-300 bg-cyan-500/10 border-cyan-500/30",
   success: "text-emerald-300 bg-emerald-500/10 border-emerald-500/30",
