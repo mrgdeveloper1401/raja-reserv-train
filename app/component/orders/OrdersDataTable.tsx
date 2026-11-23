@@ -5,12 +5,17 @@ import Link from "next/link";
 import { Card } from "../../component/ui/Card";
 import { StatusBadge } from "../../component/ui/StatusBadge";
 import { Button } from "../../component/ui/Button";
-import type { Reservation } from "../../types/index.type";
+import type { RajaAccountOption, Reservation } from "../../types/index.type";
 import { useState, useTransition } from "react";
 import { Edit, Loader2, Play, Terminal, Trash2 } from "lucide-react";
 import { ReservationLogsModal } from "./ReservationLogsModal";
 import { useRouter } from "next/navigation";
-import { deleteOrder, getOrderDetail, startRobot } from "@/app/lib/api";
+import {
+  deleteOrder,
+  getOrderDetail,
+  getRajaAccountOptions,
+  startRobot,
+} from "@/app/lib/api";
 import { OrderEditModal } from "./OrderEditModal";
 import { convertIntoDate } from "@/app/utils/config";
 
@@ -58,6 +63,10 @@ export function OrdersDataTable({
 
   const [startingId, setStartingId] = useState<number | null>(null); // برای لودینگ دکمه شروع
 
+  const [rajaAccountsList, setRajaAccountsList] = useState<RajaAccountOption[]>(
+    [],
+  );
+
   // تابع جدید برای شروع ربات
   const handleStartRobot = async (orderId: number) => {
     if (!window.confirm("آیا از شروع ربات برای این سفارش مطمئن هستید؟")) {
@@ -83,11 +92,17 @@ export function OrdersDataTable({
   const handleEditClick = async (orderId: number) => {
     setIsFetchingOrder(orderId);
     try {
-      const fullOrderData = await getOrderDetail(token, orderId);
-      setEditingOrder(fullOrderData);
+      // هر دو دیتا را همزمان می‌گیریم
+      const [fullOrderData, accounts] = await Promise.all([
+        getOrderDetail(token, orderId),
+        getRajaAccountOptions(token),
+      ]);
+
+      setRajaAccountsList(accounts); // لیست اکانت‌ها را ذخیره می‌کنیم
+      setEditingOrder(fullOrderData); // سفارش را ذخیره می‌کنیم
     } catch (error) {
       console.error(error);
-      alert("خطا در دریافت اطلاعات سفارش");
+      alert("خطا در دریافت اطلاعات سفارش یا اکانت‌ها");
     } finally {
       setIsFetchingOrder(null);
     }
@@ -356,6 +371,7 @@ export function OrdersDataTable({
           token={token}
           stations={stations}
           onClose={() => setEditingOrder(null)}
+          rajaAccounts={rajaAccountsList}
           onRefresh={() => {
             setEditingOrder(null);
             startTransition(() => router.refresh());

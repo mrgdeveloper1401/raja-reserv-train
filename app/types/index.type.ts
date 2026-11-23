@@ -303,7 +303,7 @@ export interface EditOrderType {
   to_date?: string;
   passenger_type: "male" | "family" | "famale";
   trip_type: "outbound" | "outbound_and_return";
-  raja_account_id?: number | null;
+  raja_account_id?: number;
   coupe_type?: "all" | "four" | "four_five" | "three" | "five" | "salon" | null;
   is_exclusive?: boolean;
   departure_time_slots?: number[] | null;

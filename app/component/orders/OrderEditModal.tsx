@@ -5,14 +5,18 @@ import { useState } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { updateOrder } from "@/app/lib/api";
-import { Loader2, Save, Plus, Trash2, User } from "lucide-react";
+import { Loader2, Save, Plus, Trash2, User, CheckSquare } from "lucide-react";
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
 import { formatTomanFa, toEnglishDigits } from "@/app/utils/config";
 import { StationCombobox } from "../ui/StationCombobox";
-import { EditOrderType, Passenger } from "@/app/types/index.type";
+import {
+  EditOrderType,
+  Passenger,
+  RajaAccountOption,
+} from "@/app/types/index.type";
 
 interface PassengerFormData {
   first_name: string;
@@ -23,6 +27,7 @@ interface PassengerFormData {
 
 interface Props {
   order: EditOrderType;
+  rajaAccounts: RajaAccountOption[];
   token: string;
   stations: { Name: string }[]; // <--- اضافه شد
   onClose: () => void;
@@ -47,6 +52,7 @@ export function OrderEditModal({
   stations,
   onClose,
   onRefresh,
+  rajaAccounts,
 }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -78,6 +84,10 @@ export function OrderEditModal({
     );
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.checked });
+  };
+
   // استیت فرم اصلی
   const [formData, setFormData] = useState({
     origin: order.origin || "",
@@ -87,8 +97,10 @@ export function OrderEditModal({
     coupe_type: order.coupe_type || "all",
     adult_number: order.adult_number || 1,
     baby_number: order.baby_number || 0,
+    is_exclusive: Boolean(order.is_exclusive),
     from_price: normalizePriceForInput(order.from_price),
     to_price: normalizePriceForInput(order.to_price),
+    raja_account_id: order.raja_account_id ? String(order.raja_account_id) : "",
   });
 
   // استیت مسافران (مقداردهی اولیه از order.passengers)
@@ -184,6 +196,12 @@ export function OrderEditModal({
         return; // finally لودینگ رو خاموش می‌کنه
       }
 
+      if (!formData.raja_account_id) {
+        setError("لطفاً یک اکانت رجا برای انجام رزرو انتخاب کنید.");
+        setIsLoading(false);
+        return;
+      }
+
       const payload: EditOrderType = {
         ...formData,
         travel_date: gregorianTravelDate
@@ -203,11 +221,16 @@ export function OrderEditModal({
 
         passengers: passengers, // <--- ارسال لیست مسافران
         train_number: trainNumbers,
+        raja_account_id:
+          formData.raja_account_id && Number(formData.raja_account_id),
       };
 
       // حذف فیلدهای خالی
       Object.keys(payload).forEach((key) => {
-        if (payload[key] === "" || payload[key] === null) {
+        if (
+          key !== "raja_account_id" &&
+          (payload[key] === "" || payload[key] === null)
+        ) {
           delete payload[key];
         }
       });
@@ -232,12 +255,13 @@ export function OrderEditModal({
         <h2 className="text-lg font-bold text-amber-50 mb-4">
           ویرایش سفارش #{order.id}
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {error && (
             <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-sm text-rose-300">
               {error}
             </div>
           )}
+
           {/* بخش ۱: اطلاعات سفر */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -274,6 +298,8 @@ export function OrderEditModal({
                 calendar={persian}
                 locale={persian_fa}
                 inputClass={inputClass}
+                // اضافه کردن استایل برای رفع رنگ زرد فوکوس
+                className="custom-datepicker"
               />
             </div>
             <div>
@@ -291,7 +317,7 @@ export function OrderEditModal({
 
           {/* بخش ۲: مسافران */}
           <div className="border-t border-amber-500/10 pt-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-amber-400 flex items-center gap-2">
                 <User className="h-4 w-4" /> مسافران
               </h3>
@@ -303,7 +329,7 @@ export function OrderEditModal({
               {passengers.map((passenger, index) => (
                 <div
                   key={index}
-                  className="relative border border-amber-500/10 rounded-lg p-3 bg-[#0f0d0a]/50"
+                  className="relative border border-amber-500/10 rounded-lg p-4 bg-[#0f0d0a]/50"
                 >
                   {passengers.length > 1 && (
                     <button
@@ -315,60 +341,83 @@ export function OrderEditModal({
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                    <input
-                      placeholder="نام"
-                      value={passenger.first_name}
-                      onChange={(e) =>
-                        handlePassengerChange(
-                          index,
-                          "first_name",
-                          e.target.value,
-                        )
-                      }
-                      className={inputClass}
-                    />
-                    <input
-                      placeholder="نام خانوادگی"
-                      value={passenger.last_name}
-                      onChange={(e) =>
-                        handlePassengerChange(
-                          index,
-                          "last_name",
-                          e.target.value,
-                        )
-                      }
-                      className={inputClass}
-                    />
-                    <input
-                      placeholder="کد ملی"
-                      dir="ltr"
-                      maxLength={10}
-                      value={passenger.national_id}
-                      onChange={(e) =>
-                        handlePassengerChange(
-                          index,
-                          "national_id",
-                          e.target.value,
-                        )
-                      }
-                      className={`${inputClass} font-mono`}
-                    />
-                    <DatePicker
-                      placeholder="تاریخ تولد"
-                      value={
-                        passenger.birth_date
-                          ? new DateObject({
-                              date: passenger.birth_date,
-                              calendar: gregorian,
-                            }).convert(persian, persian_fa)
-                          : null
-                      }
-                      onChange={(date) => handlePassengerBirthDate(index, date)}
-                      calendar={persian}
-                      locale={persian_fa}
-                      inputClass={`${inputClass} font-mono`}
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <label className="block text-xs text-amber-100/40 mb-1">
+                        نام
+                      </label>
+                      <input
+                        placeholder="نام"
+                        value={passenger.first_name}
+                        onChange={(e) =>
+                          handlePassengerChange(
+                            index,
+                            "first_name",
+                            e.target.value,
+                          )
+                        }
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-amber-100/40 mb-1">
+                        نام خانوادگی
+                      </label>
+                      <input
+                        placeholder="نام خانوادگی"
+                        value={passenger.last_name}
+                        onChange={(e) =>
+                          handlePassengerChange(
+                            index,
+                            "last_name",
+                            e.target.value,
+                          )
+                        }
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-amber-100/40 mb-1">
+                        کد ملی
+                      </label>
+                      <input
+                        placeholder="کد ملی"
+                        dir="ltr"
+                        maxLength={10}
+                        value={passenger.national_id}
+                        onChange={(e) =>
+                          handlePassengerChange(
+                            index,
+                            "national_id",
+                            e.target.value,
+                          )
+                        }
+                        className={`${inputClass} font-mono`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-amber-100/40 mb-1">
+                        تاریخ تولد
+                      </label>
+                      <DatePicker
+                        placeholder="تاریخ تولد"
+                        value={
+                          passenger.birth_date
+                            ? new DateObject({
+                                date: passenger.birth_date,
+                                calendar: gregorian,
+                              }).convert(persian, persian_fa)
+                            : null
+                        }
+                        onChange={(date) =>
+                          handlePassengerBirthDate(index, date)
+                        }
+                        calendar={persian}
+                        locale={persian_fa}
+                        inputClass={`${inputClass} font-mono`}
+                        className="custom-datepicker"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -376,139 +425,197 @@ export function OrderEditModal({
           </div>
 
           {/* بخش ۳: تنظیمات رزرو */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-amber-500/10 pt-4">
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                نوع کوپه
+          <div className="border-t border-amber-500/10 pt-4">
+            <h3 className="text-sm font-semibold text-amber-400 mb-4">
+              تنظیمات رزرو
+            </h3>
+
+            {/* ردیف اول: نوع کوپه، بزرگسال، خردسال */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-xs text-amber-100/60 mb-1">
+                  نوع کوپه
+                </label>
+                <select
+                  name="coupe_type"
+                  value={formData.coupe_type}
+                  onChange={handleChange}
+                  className={inputClass}
+                >
+                  <option value="all">همه انواع</option>
+                  <option value="four">4 تخته 4 ستاره</option>
+                  <option value="three">سه ستاره</option>
+                  <option value="five">5 ستاره</option>
+                  <option value="salon">سالنی</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-amber-100/60 mb-1">
+                  تعداد بزرگسال
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  name="adult_number"
+                  value={formData.adult_number}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-amber-100/60 mb-1">
+                  تعداد خردسال
+                </label>
+                <input
+                  min={0}
+                  type="number"
+                  name="baby_number"
+                  value={formData.baby_number}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* ردیف دوم: شماره قطار و قیمت‌ها */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-xs text-amber-100/60 mb-1">
+                  شماره قطار
+                </label>
+                <input
+                  name="train_number"
+                  dir="ltr"
+                  type="text"
+                  value={formData.train_number}
+                  onChange={handleChange}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-amber-100/60 mb-1">
+                  حداقل قیمت
+                </label>
+                <input
+                  type="text"
+                  name="from_price"
+                  value={formatTomanFa(String(formData.from_price))}
+                  onChange={(e) => {
+                    const digit = toEnglishDigits(e.target.value).replace(
+                      /\D/g,
+                      "",
+                    );
+                    setFormData({ ...formData, from_price: digit });
+                  }}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-amber-100/60 mb-1">
+                  حداکثر قیمت
+                </label>
+                <input
+                  type="text"
+                  name="to_price"
+                  value={formatTomanFa(String(formData.to_price))}
+                  onChange={(e) => {
+                    const digits = toEnglishDigits(e.target.value).replace(
+                      /\D/g,
+                      "",
+                    );
+                    setFormData((prev) => ({ ...prev, to_price: digits }));
+                  }}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* ردیف سوم: کوپه دربست */}
+            <div className="mb-6 flex items-center gap-2 bg-[#0f0d0a] p-3 rounded-lg border border-amber-500/10 w-full md:w-1/2">
+              <input
+                type="checkbox"
+                id="is_exclusive"
+                name="is_exclusive"
+                checked={formData.is_exclusive}
+                onChange={handleCheckboxChange}
+                className="h-4 w-4 rounded border-amber-500/20 bg-[#0f0d0a] text-amber-500 focus:ring-amber-500 focus:ring-offset-0"
+              />
+              <label
+                htmlFor="is_exclusive"
+                className="flex items-center gap-2 cursor-pointer text-sm text-amber-50"
+              >
+                <CheckSquare className="h-4 w-4 text-amber-400" /> درخواست کوپه
+                دربست (اختصاصی)
+              </label>
+            </div>
+
+            <div className="border-t border-amber-500/10 pt-4">
+              <label className="mb-1.5 block text-xs text-amber-100/60">
+                اکانت رجا برای انجام رزرو
               </label>
               <select
-                name="coupe_type"
-                value={formData.coupe_type}
+                required
+                name="raja_account_id"
+                value={formData.raja_account_id}
                 onChange={handleChange}
                 className={inputClass}
               >
-                <option value="all">همه انواع</option>
-                <option value="four">4 تخته 4 ستاره</option>
-                <option value="three">سه ستاره</option>
-                <option value="five">5 ستاره</option>
-                <option value="salon">سالنی</option>
+                <option value="" disabled>
+                  انتخاب کنید...
+                </option>
+                {rajaAccounts.map((acc) => (
+                  <option key={acc.id} value={String(acc.id)}>
+                    {acc.username}
+                  </option>
+                ))}
               </select>
             </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                تعداد بزرگسال
-              </label>
-              <input
-                type="number"
-                min={0}
-                name="adult_number"
-                value={formData.adult_number}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                تعداد خردسال
-              </label>
-              <input
-                min={0}
-                type="number"
-                name="baby_number"
-                value={formData.baby_number}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                شماره قطار
-              </label>
-              <input
-                name="train_number"
-                dir="ltr"
-                type="text"
-                value={formData.train_number}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                حداقل قیمت
-              </label>
-              <input
-                type="text"
-                name="from_price"
-                value={formatTomanFa(String(formData.from_price))}
-                onChange={(e) => {
-                  const digit = toEnglishDigits(e.target.value).replace(
-                    /\D/g,
-                    "",
-                  );
-                  setFormData({ ...formData, from_price: digit });
-                }}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-amber-100/60 mb-1">
-                حداکثر قیمت
-              </label>
-              <input
-                type="text"
-                name="to_price"
-                value={formatTomanFa(String(formData.to_price))}
-                onChange={(e) => {
-                  const digits = toEnglishDigits(e.target.value).replace(
-                    /\D/g,
-                    "",
-                  );
-                  setFormData((prev) => ({ ...prev, to_price: digits }));
-                }}
-                className={inputClass}
-              />
-            </div>
-            <fieldset className="border-t border-amber-500/10 pt-3">
-              <legend className="px-1 text-sm font-semibold text-amber-400">
-                زمان حرکت قطار رفت
-              </legend>
 
-              <p className="mb-3 text-xs text-amber-100/60">
-                می‌توانید چند بازه انتخاب کنید. بدون انتخاب، محدودیت ساعت حرکت
-                ندارید.
-              </p>
-
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {DEPARTURE_TIME_SLOTS.map(({ value, label }) => (
-                  <label
-                    key={value}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-500/10 bg-[#0f0d0a] p-2.5 text-sm text-amber-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={departureTimeSlots.includes(value)}
-                      onChange={(e) =>
-                        handleDepartureTimeSlotChange(
-                          value,
-                          e.currentTarget.checked,
-                        )
-                      }
-                      disabled={isLoading}
-                      className="h-4 w-4 accent-amber-500"
-                    />
-                    <span>{label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            {/* بخش زمان حرکت قطار - تمام عرض */}
+            <div className="border-t border-amber-500/10 pt-4">
+              <fieldset>
+                <legend className="text-sm font-semibold text-amber-400 mb-2">
+                  زمان حرکت قطار رفت
+                </legend>
+                <p className="mb-3 text-xs text-amber-100/60">
+                  می‌توانید چند بازه انتخاب کنید. بدون انتخاب، محدودیت ساعت حرکت
+                  ندارید.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {DEPARTURE_TIME_SLOTS.map(({ value, label }) => (
+                    <label
+                      key={value}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-500/10 bg-[#0f0d0a] p-3 text-sm text-amber-50 hover:border-amber-500/30 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={departureTimeSlots.includes(value)}
+                        onChange={(e) =>
+                          handleDepartureTimeSlotChange(
+                            value,
+                            e.currentTarget.checked,
+                          )
+                        }
+                        disabled={isLoading}
+                        className="h-4 w-4 accent-amber-500 rounded"
+                      />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t border-amber-500/10">
             <Button type="button" variant="outline" onClick={onClose}>
               انصراف
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="min-w-[120px]"
+            >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
