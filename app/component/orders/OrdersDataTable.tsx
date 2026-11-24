@@ -62,10 +62,51 @@ export function OrdersDataTable({
   const router = useRouter();
 
   const [startingId, setStartingId] = useState<number | null>(null); // برای لودینگ دکمه شروع
+  const [isStartingAll, setIsStartingAll] = useState(false);
 
   const [rajaAccountsList, setRajaAccountsList] = useState<RajaAccountOption[]>(
     [],
   );
+
+  const handleStartAll = async () => {
+    // فیلتر کردن رزروهایی که وضعیت آن‌ها "waiting_start" است
+    const eligibleReservations = reservations.filter(
+      (r) => r.status === "waiting_start",
+    );
+
+    if (eligibleReservations.length === 0) {
+      alert("هیچ سفارشی با وضعیت «آماده شروع» برای اجرا وجود ندارد.");
+      return;
+    }
+
+    // اعمال محدودیت ۴ تایی
+    const toStart = eligibleReservations.slice(0, 4);
+
+    if (
+      !window.confirm(
+        `آیا از شروع ربات برای ${toStart.length} سفارش اول مطمئن هستید؟ (حداکثر ۴ سفارش)`,
+      )
+    ) {
+      return;
+    }
+
+    setIsStartingAll(true);
+    try {
+      // شروع همزمان (یا پشت سر هم) برای ۴ سفارش
+      // از Promise.all استفاده می‌کنیم تا سریع‌تر باشد
+      await Promise.all(toStart.map((r) => startRobot(token, r.id)));
+
+      // پس از موفقیت، صفحه را رفرش می‌کنیم
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "خطا در شروع برخی از ربات‌ها");
+    } finally {
+      setIsStartingAll(false);
+    }
+  };
 
   // تابع جدید برای شروع ربات
   const handleStartRobot = async (orderId: number) => {
@@ -148,6 +189,21 @@ export function OrdersDataTable({
 
   return (
     <>
+      {/* 🔥 دکمه شروع همه در بالای جدول (کنار دکمه‌های دیگر) */}
+      <div className="mb-4 flex items-center gap-2">
+        <button
+          onClick={handleStartAll}
+          disabled={isStartingAll || isPending}
+          className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-500/20"
+        >
+          {isStartingAll ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+          {isStartingAll ? "در حال شروع..." : "شروع همه (حداکثر ۴)"}
+        </button>
+      </div>
       <Card padded={false} className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
