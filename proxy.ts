@@ -56,6 +56,7 @@ export async function proxy(request: NextRequest) {
       }
     } catch (error) {
       // در صورت خطای شبکه
+      request.cookies.clear()
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }
